@@ -13,4 +13,10 @@ class CatalogController extends Controller
         return $this->render('index', ['products' => $products]);
     }
 
+    public function actionCard($id)
+    {
+        $product = Product::findOne($id);
+        return $this->render('card', ['product' => $product]);
+    }
+
 }

@@ -19,6 +19,8 @@ use yii\web\UploadedFile;
  * @property int $country_id
  * @property int $color_id
  * @property int $material_id
+ * @property bool $is_new
+ * @property bool $is_popular
  *
  * @property Color $color
  * @property Country $country

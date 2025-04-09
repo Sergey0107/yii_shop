@@ -76,7 +76,8 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
-        return $this->render('index');
+        $popularProducts = Product::find()->where(['is_popular' => 1])->all();
+        return $this->render('index', ['products' => $popularProducts]);
     }
 
 
