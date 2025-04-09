@@ -1,27 +1,27 @@
 <?php
 
-use backend\models\Order;
+use backend\models\Delivery;
 use yii\helpers\Html;
 use yii\helpers\Url;
 use yii\grid\ActionColumn;
 use yii\grid\GridView;
 
 /** @var yii\web\View $this */
-/** @var backend\models\OrderSearch $searchModel */
+/** @var backend\models\DeliverySearch $searchModel */
 /** @var yii\data\ActiveDataProvider $dataProvider */
 
-$this->title = 'Заказы';
+$this->title = 'Службы доставки';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
-<div class="order-index">
+<div class="delivery-index">
 
     <h1><?= Html::encode($this->title) ?></h1>
 
     <p>
-        <?= Html::a('Создать заказ', ['create'], ['class' => 'btn btn-success']) ?>
+        <?= Html::a('Создать службу доставки', ['create'], ['class' => 'btn btn-success']) ?>
     </p>
 
-    <?php //echo $this->render('_search', ['model' => $searchModel]); ?>
+    <?php  //echo $this->render('_search', ['model' => $searchModel]); ?>
 
     <?= GridView::widget([
         'dataProvider' => $dataProvider,
@@ -30,15 +30,10 @@ $this->params['breadcrumbs'][] = $this->title;
             ['class' => 'yii\grid\SerialColumn'],
 
             'id',
-            'user_id',
-            'total_price',
-            'status',
-            'created_at',
-            //'delivery_id',
-            //'delivery_address',
+            'name',
             [
                 'class' => ActionColumn::className(),
-                'urlCreator' => function ($action, Order $model, $key, $index, $column) {
+                'urlCreator' => function ($action, Delivery $model, $key, $index, $column) {
                     return Url::toRoute([$action, 'id' => $model->id]);
                  }
             ],
