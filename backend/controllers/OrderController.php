@@ -4,6 +4,7 @@ namespace backend\controllers;
 
 use backend\models\Order;
 use backend\models\OrderSearch;
+use common\models\User;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -36,14 +37,20 @@ class OrderController extends Controller
      *
      * @return string
      */
-    public function actionIndex()
+    public function actionIndex($user_id = null)
     {
+        $user = null;
         $searchModel = new OrderSearch();
         $dataProvider = $searchModel->search($this->request->queryParams);
+        if ($user_id){
+            $dataProvider->query->andWhere(['user_id' => $user_id]);
+            $user = User::findOne($user_id);
+        }
 
         return $this->render('index', [
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
+            'user' => $user,
         ]);
     }
 
