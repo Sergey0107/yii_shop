@@ -75,7 +75,9 @@ class Product extends \yii\db\ActiveRecord
             $filePath = $uploadDir . $fileName;
 
             if ($this->imageFile->saveAs($filePath)) {
-                $this->deleteImage($this->img);
+                if ($this->img){
+                    $this->deleteImage($this->img);
+                }
                 $this->img = $fileName;
                 return true;
             }
