@@ -76,9 +76,9 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
-        //print_r('тут'); die();
         return $this->render('index');
     }
+
 
     /**
      * Logs in a user.
@@ -145,8 +145,7 @@ class SiteController extends Controller
      */
     public function actionAbout()
     {
-        $products = Product::find()->all();
-        return $this->render('about', ['products' => $products]);
+        return $this->render('about');
     }
 
     /**
