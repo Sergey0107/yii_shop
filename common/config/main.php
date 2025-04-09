@@ -9,5 +9,8 @@ return [
         'cache' => [
             'class' => \yii\caching\FileCache::class,
         ],
+        'authManager' => [
+            'class' => 'yii\rbac\DbManager', // Используем базу данных для хранения ролей
+        ],
     ],
 ];

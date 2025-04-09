@@ -3,12 +3,12 @@
 use yii\helpers\Html;
 
 /** @var yii\web\View $this */
-/** @var app\models\Order $model */
+/** @var backend\models\Order $model */
 
-$this->title = 'Update Order: ' . $model->id;
-$this->params['breadcrumbs'][] = ['label' => 'Orders', 'url' => ['index']];
+$this->title = 'Редактировать заказ: ' . $model->id;
+$this->params['breadcrumbs'][] = ['label' => 'Заказы', 'url' => ['index']];
 $this->params['breadcrumbs'][] = ['label' => $model->id, 'url' => ['view', 'id' => $model->id]];
-$this->params['breadcrumbs'][] = 'Update';
+$this->params['breadcrumbs'][] = 'Редактировать';
 ?>
 <div class="order-update">
 

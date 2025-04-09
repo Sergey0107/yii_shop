@@ -29,6 +29,8 @@ class User extends ActiveRecord implements IdentityInterface
     const STATUS_INACTIVE = 9;
     const STATUS_ACTIVE = 10;
 
+    public $password;
+
 
     /**
      * {@inheritdoc}
@@ -58,6 +60,8 @@ class User extends ActiveRecord implements IdentityInterface
             ['email', 'email'],
             ['status', 'default', 'value' => self::STATUS_INACTIVE],
             ['status', 'in', 'range' => [self::STATUS_ACTIVE, self::STATUS_INACTIVE, self::STATUS_DELETED]],
+            [['password'], 'required', 'on' => 'create'], // Требовать пароль только при создании
+            [['password'], 'string', 'min' => 6], // Минимальная длина пароля
         ];
     }
 
@@ -223,7 +227,22 @@ class User extends ActiveRecord implements IdentityInterface
             'username' => 'Имя',
             'email' => 'Email',
             'status' => 'Статус',
+            'password' => 'Пароль',
             'created_at' => 'Создан'
         ];
+    }
+
+    public function beforeSave($insert): bool
+    {
+        if (parent::beforeSave($insert)) {
+            if ($this->isNewRecord) {
+                $this->generateAuthKey();
+                $this->setPassword($this->password); // Установка хеша пароля
+            } elseif (!empty($this->password)) {
+                $this->setPassword($this->password); // Обновление пароля, если он был изменен
+            }
+            return true;
+        }
+        return false;
     }
 }

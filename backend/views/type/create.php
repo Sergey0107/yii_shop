@@ -7,7 +7,7 @@ use yii\helpers\Html;
 
 $this->title = 'Добавить тип';
 $this->params['breadcrumbs'][] = ['label' => 'Характеристики', 'url' => ['/specification/index']];
-$this->params['breadcrumbs'][] = ['label' => 'Types', 'url' => ['index']];
+$this->params['breadcrumbs'][] = ['label' => 'Типы', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="type-create">

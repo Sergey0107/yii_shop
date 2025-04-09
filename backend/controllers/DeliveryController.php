@@ -2,17 +2,16 @@
 
 namespace backend\controllers;
 
-use backend\models\Order;
-use backend\models\OrderSearch;
-use common\models\User;
+use backend\models\Delivery;
+use backend\models\DeliverySearch;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 
 /**
- * OrderController implements the CRUD actions for Order model.
+ * DeliveryController implements the CRUD actions for Delivery model.
  */
-class OrderController extends Controller
+class DeliveryController extends Controller
 {
     /**
      * @inheritDoc
@@ -33,29 +32,23 @@ class OrderController extends Controller
     }
 
     /**
-     * Lists all Order models.
+     * Lists all Delivery models.
      *
      * @return string
      */
-    public function actionIndex($user_id = null)
+    public function actionIndex()
     {
-        $user = null;
-        $searchModel = new OrderSearch();
+        $searchModel = new DeliverySearch();
         $dataProvider = $searchModel->search($this->request->queryParams);
-        if ($user_id){
-            $dataProvider->query->andWhere(['user_id' => $user_id]);
-            $user = User::findOne($user_id);
-        }
 
         return $this->render('index', [
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
-            'user' => $user,
         ]);
     }
 
     /**
-     * Displays a single Order model.
+     * Displays a single Delivery model.
      * @param int $id ID
      * @return string
      * @throws NotFoundHttpException if the model cannot be found
@@ -68,13 +61,13 @@ class OrderController extends Controller
     }
 
     /**
-     * Creates a new Order model.
+     * Creates a new Delivery model.
      * If creation is successful, the browser will be redirected to the 'view' page.
      * @return string|\yii\web\Response
      */
     public function actionCreate()
     {
-        $model = new Order();
+        $model = new Delivery();
 
         if ($this->request->isPost) {
             if ($model->load($this->request->post()) && $model->save()) {
@@ -90,7 +83,7 @@ class OrderController extends Controller
     }
 
     /**
-     * Updates an existing Order model.
+     * Updates an existing Delivery model.
      * If update is successful, the browser will be redirected to the 'view' page.
      * @param int $id ID
      * @return string|\yii\web\Response
@@ -110,7 +103,7 @@ class OrderController extends Controller
     }
 
     /**
-     * Deletes an existing Order model.
+     * Deletes an existing Delivery model.
      * If deletion is successful, the browser will be redirected to the 'index' page.
      * @param int $id ID
      * @return \yii\web\Response
@@ -124,15 +117,15 @@ class OrderController extends Controller
     }
 
     /**
-     * Finds the Order model based on its primary key value.
+     * Finds the Delivery model based on its primary key value.
      * If the model is not found, a 404 HTTP exception will be thrown.
      * @param int $id ID
-     * @return Order the loaded model
+     * @return Delivery the loaded model
      * @throws NotFoundHttpException if the model cannot be found
      */
     protected function findModel($id)
     {
-        if (($model = Order::findOne(['id' => $id])) !== null) {
+        if (($model = Delivery::findOne(['id' => $id])) !== null) {
             return $model;
         }
 

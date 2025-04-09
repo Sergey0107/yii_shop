@@ -42,4 +42,6 @@ $this->params['breadcrumbs'][] = $this->title;
         ],
     ]) ?>
 
+    <?= Html::a('Заказы пользователя', ['order/index', 'user_id' => $model->id], ['class' => 'btn btn-primary']) ?>
+
 </div>
