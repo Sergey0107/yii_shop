@@ -20,7 +20,7 @@ AppAsset::register($this);
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <?php $this->registerCsrfMetaTags() ?>
     <title><?= Html::encode($this->title) ?></title>
-    <!-- Подключаем Font Awesome -->
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <?php $this->head() ?>
 </head>
@@ -30,10 +30,10 @@ AppAsset::register($this);
 <header>
     <?php
     NavBar::begin([
-        'brandLabel' => '<i class="fas fa-store me-2"></i> Главная', // Заменяем Yii::$app->name на "Главная"
+        'brandLabel' => '<i class="fas fa-store me-2"></i> Главная',
         'brandUrl' => Yii::$app->homeUrl,
         'options' => [
-            'class' => 'navbar navbar-expand-md navbar-dark bg-dark shadow-dark fixed-top', // Темный фон с усиленной тенью
+            'class' => 'navbar navbar-expand-md navbar-dark bg-dark shadow-dark fixed-top',
         ],
     ]);
     $menuItems = [
@@ -50,20 +50,20 @@ AppAsset::register($this);
         'items' => $menuItems,
     ]);
 
-    // Добавляем иконку корзины
-    echo Html::a('<i class="fas fa-shopping-cart me-2"></i><span class="badge bg-danger">3</span>', ['/cart/index'], [
-        'class' => 'btn btn-outline-light d-flex align-items-center', // Белая кнопка на темном фоне
+
+    echo Html::a('<i class="fas fa-shopping-cart me-2"></i><span class="badge bg-danger">1</span>', ['/cart/index'], [
+        'class' => 'btn btn-outline-light d-flex align-items-center',
     ]);
 
     if (Yii::$app->user->isGuest) {
         echo Html::tag('div', Html::a('<i class="fas fa-sign-in-alt me-1"></i> Войти', ['/site/login'], [
-            'class' => 'btn btn-link login text-decoration-none text-white', // Белый текст для ссылки "Войти"
+            'class' => 'btn btn-link login text-decoration-none text-white',
         ]), ['class' => 'd-flex']);
     } else {
         echo Html::beginForm(['/site/logout'], 'post', ['class' => 'd-flex'])
             . Html::submitButton(
                 '<i class="fas fa-sign-out-alt me-1"></i> Выйти (' . Yii::$app->user->identity->username . ')',
-                ['class' => 'btn btn-link logout text-decoration-none text-white'] // Белый текст для кнопки "Выйти"
+                ['class' => 'btn btn-link logout text-decoration-none text-white']
             )
             . Html::endForm();
     }
@@ -94,22 +94,21 @@ AppAsset::register($this);
 <?php $this->endPage(); ?>
 
 <style>
-    /* Усиленная тень для панели навигации */
+
     .shadow-dark {
         box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2), 0 2px 4px rgba(0, 0, 0, 0.1); /* Более темная и глубокая тень */
     }
 
-    /* Тень для основного контента */
+
     .shadow-content {
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08); /* Легкая тень для контейнера */
-        padding: 20px; /* Добавляем отступы для лучшего визуального восприятия */
-        background-color: #ffffff; /* Белый фон для контейнера */
-        border-radius: 8px; /* Слегка скругляем углы */
-        margin-top: 20px; /* Отступ сверху для разделения с панелью навигации */
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+        padding: 20px;
+        background-color: #ffffff;
+        border-radius: 8px;
+        margin-top: 20px;
     }
 
-    /* Усиленная тень для футера */
     .footer.shadow-custom {
-        box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.08); /* Тень снизу для футера */
+        box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.08);
     }
 </style>

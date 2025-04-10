@@ -6,14 +6,14 @@ use frontend\assets\BackendAsset;
 $backendUploads = BackendAsset::register($this);
 
 /** @var \yii\web\View $this */
-/** @var \app\models\Product $product */
+/** @var backend\models\Product $product */
 
-$this->title = $product->name; // Устанавливаем заголовок страницы как название товара
+$this->title = $product->name;
 ?>
 
 <div class="product-page">
     <div class="product-container">
-        <!-- Левая колонка: Изображение -->
+
         <div class="product-image">
             <?php if ($product->img) { ?>
                 <img src="<?= $backendUploads->baseUrl ?>/product/<?= $product->img ?>" alt="<?= Html::encode($product->name) ?>">
@@ -22,7 +22,7 @@ $this->title = $product->name; // Устанавливаем заголовок 
             <?php } ?>
         </div>
 
-        <!-- Правая колонка: Информация о товаре -->
+
         <div class="product-info">
             <h1><?= Html::encode($product->name) ?></h1>
 
@@ -66,7 +66,7 @@ $this->title = $product->name; // Устанавливаем заголовок 
         </div>
     </div>
 
-    <!-- Описание товара -->
+
     <div class="product-description">
         <h2>Описание</h2>
         <p><?= Html::encode($product->description ?? 'Нет описания') ?></p>
@@ -74,30 +74,29 @@ $this->title = $product->name; // Устанавливаем заголовок 
 </div>
 
 <style>
-    /* Общий стиль страницы */
+
     .product-page {
-        background-color: #f8f9fa; /* Светло-серый фон */
+        background-color: #f8f9fa;
         padding: 20px;
-        min-height: 100vh; /* Минимальная высота страницы */
+        min-height: 100vh;
     }
 
-    /* Контейнер для изображения и информации */
+
     .product-container {
         display: flex;
-        gap: 30px; /* Отступ между изображением и информацией */
+        gap: 30px;
         margin-bottom: 40px;
     }
 
-    /* Стили для изображения */
+
     .product-image img {
         width: 100%;
-        max-width: 400px; /* Максимальная ширина изображения */
+        max-width: 400px;
         height: auto;
         border-radius: 12px; /* Скругленные углы */
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Легкая тень */
     }
 
-    /* Стили для информации о товаре */
     .product-info {
         flex: 1; /* Занимает оставшееся пространство */
         background-color: #ffffff; /* Белый фон */
