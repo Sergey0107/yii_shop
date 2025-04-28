@@ -3,7 +3,7 @@
 use yii\helpers\Html;
 
 /** @var yii\web\View $this */
-/** @var app\models\Property $model */
+/** @var backend\models\Property $model */
 
 $this->title = 'Update Property: ' . $model->name;
 $this->params['breadcrumbs'][] = ['label' => 'Properties', 'url' => ['index']];

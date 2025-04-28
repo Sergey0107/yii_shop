@@ -2,7 +2,7 @@
 
 namespace backend\controllers;
 
-use app\models\Property;
+use backend\models\Property;
 use backend\models\PropertySearch;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;

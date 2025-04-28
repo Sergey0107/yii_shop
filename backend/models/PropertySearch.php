@@ -4,7 +4,7 @@ namespace backend\models;
 
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
-use app\models\Property;
+use backend\models\Property;
 
 /**
  * PropertySearch represents the model behind the search form of `app\models\Property`.
