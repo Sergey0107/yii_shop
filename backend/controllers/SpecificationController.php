@@ -33,7 +33,8 @@ class SpecificationController extends Controller
      */
     public function actionIndex()
     {
-        $specifications = (new \backend\services\SpecificationServices)->getAllSpecifications();
-        return $this->render('index', ['specifications' => $specifications]);
+        $propertyAll = (new \backend\services\SpecificationServices)->getAllSpecifications();
+
+        return $this->render('index', ['propertyAll' => $propertyAll]);
     }
 }

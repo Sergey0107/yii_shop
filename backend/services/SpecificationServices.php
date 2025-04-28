@@ -5,6 +5,7 @@ namespace backend\services;
 use backend\models\Color;
 use backend\models\Country;
 use backend\models\Material;
+use backend\models\PropertySearch;
 use backend\models\Size;
 use backend\models\Type;
 
@@ -16,13 +17,7 @@ class SpecificationServices
      */
     public function getAllSpecifications()
     {
-        return [
-            'Размер' => 'size/index',
-            'Страна изготовитель' => 'country/index',
-            'Тип ковра' => 'type/index',
-            'Материал изготовления' => 'material/index',
-            'Цвет' => 'color/index',
-        ];
+        return PropertySearch::find()->all();
     }
 
     public function getCountries()
