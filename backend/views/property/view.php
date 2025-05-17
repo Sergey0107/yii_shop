@@ -34,6 +34,6 @@ $this->params['breadcrumbs'][] = $this->title;
         ],
     ]) ?>
 
-    <?= Html::a('Значения', ['property-value/index', 'id' => $model->id], ['class' => 'btn btn-primary']) ?>
+    <?= Html::a('Значения', ['property-value/index', 'property_id' => $model->id], ['class' => 'btn btn-primary']) ?>
 
 </div>

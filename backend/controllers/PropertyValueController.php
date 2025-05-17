@@ -36,17 +36,17 @@ class PropertyValueController extends Controller
      *
      * @return string
      */
-    public function actionIndex($id)
+    public function actionIndex($property_id)
     {
         $searchModel = new PropertyValueSearch();
-        $searchModel->property_id = $id;
+        $searchModel->property_id = $property_id;
 
         $dataProvider = $searchModel->search(\Yii::$app->request->queryParams);
 
         return $this->render('index', [
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
-            'id' => $id,
+            'property_id' => $property_id,
         ]);
     }
 
@@ -82,6 +82,7 @@ class PropertyValueController extends Controller
 
         return $this->render('create', [
             'model' => $model,
+            'property_id' => $property_id,
         ]);
     }
 

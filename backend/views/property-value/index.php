@@ -9,7 +9,7 @@ use yii\grid\GridView;
 /** @var yii\web\View $this */
 /** @var backend\models\PropertyValueSearch $searchModel */
 /** @var yii\data\ActiveDataProvider $dataProvider */
-/** @var int $id */
+/** @var int $property_id */
 
 
 $this->title = 'Значения характеристики';
@@ -20,7 +20,7 @@ $this->params['breadcrumbs'][] = $this->title;
     <h1><?= Html::encode($this->title) ?></h1>
 
     <p>
-        <?= Html::a('Добавить значение', ['create'], ['class' => 'btn btn-success']) ?>
+        <?= Html::a('Добавить значение', ['create', 'property_id' => $property_id], ['class' => 'btn btn-success']) ?>
     </p>
 
     <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
