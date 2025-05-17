@@ -67,4 +67,14 @@ class Property extends \yii\db\ActiveRecord
         return $this->hasMany(PropertyValue::class, ['property_id' => 'id']);
     }
 
+    /**
+     * Gets query for [[PropertyValues]].
+     *
+     * @return \yii\db\ActiveQuery
+     */
+    public function getValues()
+    {
+        return $this->hasMany(PropertyValue::class, ['property_id' => 'id']);
+    }
+
 }
