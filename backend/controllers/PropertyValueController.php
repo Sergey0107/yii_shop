@@ -2,16 +2,16 @@
 
 namespace backend\controllers;
 
-use backend\models\Property;
-use backend\models\PropertySearch;
+use backend\models\PropertyValue;
+use backend\models\PropertyValueSearch;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 
 /**
- * PropertyController implements the CRUD actions for Property model.
+ * PropertyValueController implements the CRUD actions for PropertyValue model.
  */
-class PropertyController extends Controller
+class PropertyValueController extends Controller
 {
     /**
      * @inheritDoc
@@ -32,23 +32,26 @@ class PropertyController extends Controller
     }
 
     /**
-     * Lists all Property models.
+     * Lists all PropertyValue models.
      *
      * @return string
      */
-    public function actionIndex()
+    public function actionIndex($id)
     {
-        $searchModel = new PropertySearch();
-        $dataProvider = $searchModel->search($this->request->queryParams);
+        $searchModel = new PropertyValueSearch();
+        $searchModel->property_id = $id;
+
+        $dataProvider = $searchModel->search(\Yii::$app->request->queryParams);
 
         return $this->render('index', [
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
+            'id' => $id,
         ]);
     }
 
     /**
-     * Displays a single Property model.
+     * Displays a single PropertyValue model.
      * @param int $id ID
      * @return string
      * @throws NotFoundHttpException if the model cannot be found
@@ -61,13 +64,13 @@ class PropertyController extends Controller
     }
 
     /**
-     * Creates a new Property model.
+     * Creates a new PropertyValue model.
      * If creation is successful, the browser will be redirected to the 'view' page.
      * @return string|\yii\web\Response
      */
-    public function actionCreate()
+    public function actionCreate($property_id)
     {
-        $model = new Property();
+        $model = new PropertyValue();
 
         if ($this->request->isPost) {
             if ($model->load($this->request->post()) && $model->save()) {
@@ -83,7 +86,7 @@ class PropertyController extends Controller
     }
 
     /**
-     * Updates an existing Property model.
+     * Updates an existing PropertyValue model.
      * If update is successful, the browser will be redirected to the 'view' page.
      * @param int $id ID
      * @return string|\yii\web\Response
@@ -103,7 +106,7 @@ class PropertyController extends Controller
     }
 
     /**
-     * Deletes an existing Property model.
+     * Deletes an existing PropertyValue model.
      * If deletion is successful, the browser will be redirected to the 'index' page.
      * @param int $id ID
      * @return \yii\web\Response
@@ -117,23 +120,18 @@ class PropertyController extends Controller
     }
 
     /**
-     * Finds the Property model based on its primary key value.
+     * Finds the PropertyValue model based on its primary key value.
      * If the model is not found, a 404 HTTP exception will be thrown.
      * @param int $id ID
-     * @return Property the loaded model
+     * @return PropertyValue the loaded model
      * @throws NotFoundHttpException if the model cannot be found
      */
     protected function findModel($id)
     {
-        if (($model = Property::findOne(['id' => $id])) !== null) {
+        if (($model = PropertyValue::findOne(['id' => $id])) !== null) {
             return $model;
         }
 
         throw new NotFoundHttpException('The requested page does not exist.');
-    }
-
-    public function actionGetValue()
-    {
-
     }
 }
