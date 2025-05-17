@@ -1,6 +1,10 @@
 <?php
 
+use backend\models\ProductProperty;
+use backend\models\Property;
+use backend\models\PropertyValue;
 use backend\models\Size;
+use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
 use yii\widgets\ActiveForm;
 
@@ -12,6 +16,8 @@ use yii\widgets\ActiveForm;
 /** @var array $countries */
 /** @var array $materials */
 /** @var array $types */
+/** @var backend\models\Property[] $properties */
+/** @var ProductProperty $currentProperties */
 
 ?>
 
@@ -72,6 +78,30 @@ use yii\widgets\ActiveForm;
         $materials,
         ['prompt' => 'Выберите материал']
     ) ?>
+
+    <h3>Дополнительные свойства</h3>
+
+    <div id="additional-properties">
+        <?php foreach ($properties as $property):
+            $selectedValue = null;
+            foreach ($currentProperties as $cp) {
+                if ($cp->property_id == $property->id) {
+                    $selectedValue = $cp->value_id;
+                    break;
+                }
+            }
+            ?>
+            <div class="form-group">
+                <?= Html::label($property->name, "property_{$property->id}") ?>
+                <?= Html::dropDownList(
+                    "PropertyValues[{$property->id}]",
+                    $selectedValue,
+                    ArrayHelper::map(PropertyValue::findAll(['property_id' => $property->id]), 'id', 'value'),
+                    ['prompt' => 'Выберите значение...', 'class' => 'form-control']
+                ) ?>
+            </div>
+        <?php endforeach; ?>
+    </div>
 
     <?= $form->field($model, 'is_new')->checkbox() ?>
     <?= $form->field($model, 'is_popular')->checkbox() ?>

@@ -95,7 +95,24 @@ $this->params['breadcrumbs'][] = $this->title;
                     return $model->is_popular ? 'True' : 'False';
                 },
             ],
+            [
+                'label' => 'Дополнительные свойства',
+                'format' => 'html',
+                'value' => function ($model) {
+                    if (!empty($model->propertyValues)) {
+                        $result = '<ul>';
+                        foreach ($model->propertyValues as $propValue) {
+                            $result .= "<li><strong>{$propValue->property->name}:</strong> {$propValue->value}</li>";
+                        }
+                        $result .= '</ul>';
+                        return $result;
+                    }
+                    return 'Нет дополнительных свойств';
+                },
+            ],
         ],
+
+
     ]) ?>
 
 </div>

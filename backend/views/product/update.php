@@ -1,5 +1,6 @@
 <?php
 
+use backend\models\ProductProperty;
 use yii\helpers\Html;
 
 /** @var yii\web\View $this */
@@ -9,6 +10,8 @@ use yii\helpers\Html;
 /** @var array $countries */
 /** @var array $materials */
 /** @var array $types */
+/** @var backend\models\Property[] $properties */
+/** @var ProductProperty $currentProperties */
 
 $this->title = 'Редактировать товар: ' . $model->name;
 $this->params['breadcrumbs'][] = ['label' => 'Товары', 'url' => ['index']];
@@ -26,6 +29,8 @@ $this->params['breadcrumbs'][] = 'Редактировать';
         'colors' => $colors,
         'types' => $types,
         'materials' => $materials,
+        'properties' => $properties,         // <-- ДОЛЖНО БЫТЬ ЭТО
+        'currentProperties' => $currentProperties,
     ]) ?>
 
 </div>

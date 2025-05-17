@@ -85,4 +85,9 @@ class ProductProperty extends \yii\db\ActiveRecord
         return $this->hasOne(PropertyValue::class, ['id' => 'value_id']);
     }
 
+    public function getPropertyValue()
+    {
+        return $this->hasOne(PropertyValue::class, ['id' => 'value_id']);
+    }
+
 }

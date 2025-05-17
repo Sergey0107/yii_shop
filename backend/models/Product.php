@@ -172,4 +172,21 @@ class Product extends \yii\db\ActiveRecord
         }
     }
 
+    public function getProductProperties()
+    {
+        return $this->hasMany(ProductProperty::class, ['product_id' => 'id']);
+    }
+
+    public function getProperties()
+    {
+        return $this->hasMany(Property::class, ['id' => 'property_id'])
+            ->viaTable('product_property', ['product_id' => 'id']);
+    }
+
+    public function getPropertyValues()
+    {
+        return $this->hasMany(PropertyValue::class, ['id' => 'value_id'])
+            ->via('productProperties');
+    }
+
 }

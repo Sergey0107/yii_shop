@@ -4,7 +4,9 @@ namespace backend\controllers;
 
 use backend\models\Country;
 use backend\models\Product;
+use backend\models\ProductProperty;
 use backend\models\ProductSearch;
+use backend\models\Property;
 use backend\models\Size;
 use backend\services\CountryServices;
 use Yii;
@@ -114,17 +116,51 @@ class ProductController extends Controller
 
         $sizes = (new \backend\services\SpecificationServices())->getSizes();
         $countries = (new \backend\services\SpecificationServices())->getCountries();
-        $colors = (new \backend\services\SpecificationServices)->getColors();
-        $types = (new \backend\services\SpecificationServices)->getTypes();
-        $material = (new \backend\services\SpecificationServices)->getMaterials();
+        $colors = (new \backend\services\SpecificationServices())->getColors();
+        $types = (new \backend\services\SpecificationServices())->getTypes();
+        $materials = (new \backend\services\SpecificationServices())->getMaterials();
+
+        // Все доступные свойства (property)
+        $properties = Property::find()->all();
+
+        // Текущие значения свойств у товара
+        $currentProperties = ProductProperty::find()
+            ->where(['product_id' => $model->id])
+            ->with('propertyValue.property')
+            ->all();
 
         if ($model->load(Yii::$app->request->post())) {
 
-            $model->imageFile = UploadedFile::getInstance($model, 'imageFile'); // Получаем загруженный файл
-            if ($model->upload()) { // Загружаем файл и сохраняем путь
-                if ($model->save(false)) { // Сохраняем модель в базу данных
-                    return $this->redirect(['view', 'id' => $model->id]);
+            // Обработка загрузки изображения
+            $model->imageFile = UploadedFile::getInstance($model, 'imageFile');
+            if ($model->upload()) {
+                // Не сохраняем сразу, чтобы сначала обработать свойства
+            }
+
+            // +++ Новая часть: обработка свойств +++
+            $propertyValues = Yii::$app->request->post('PropertyValues', []);
+
+            // Удаляем старые связи
+            ProductProperty::deleteAll(['product_id' => $model->id]);
+
+            // Добавляем новые
+            foreach ($propertyValues as $propertyId => $valueId) {
+                if ($valueId) {
+                    $productProperty = new ProductProperty();
+                    $productProperty->product_id = $model->id;
+                    $productProperty->property_id = $propertyId;
+                    $productProperty->value_id = $valueId;
+
+                    if (!$productProperty->save()) {
+                        Yii::error("Ошибка сохранения свойства: " . print_r($productProperty->errors, true));
+                    }
                 }
+            }
+            // --- Конец обработки свойств ---
+
+            // Теперь сохраняем саму модель товара
+            if ($model->save(false)) { // false - чтобы не вызывать валидацию повторно
+                return $this->redirect(['view', 'id' => $model->id]);
             }
         }
 
@@ -134,7 +170,9 @@ class ProductController extends Controller
             'countries' => $countries,
             'colors' => $colors,
             'types' => $types,
-            'materials' => $material,
+            'materials' => $materials,
+            'properties' => $properties,
+            'currentProperties' => $currentProperties,
         ]);
     }
 
