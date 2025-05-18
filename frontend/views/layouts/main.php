@@ -9,6 +9,7 @@ use yii\bootstrap5\Breadcrumbs;
 use yii\bootstrap5\Html;
 use yii\bootstrap5\Nav;
 use yii\bootstrap5\NavBar;
+use yii\helpers\Url;
 
 AppAsset::register($this);
 ?>
@@ -351,9 +352,9 @@ AppAsset::register($this);
 
                     <!-- Search bar -->
                     <div class="search-bar flex-grow-1 mx-3 position-relative">
-                        <form class="d-flex">
+                        <form action="<?= Url::to(['catalog/index']) ?>" method="get" class="d-flex">
                             <div class="input-group">
-                                <input type="text" class="form-control border-2 border-primary rounded-pill ps-4 pe-5 py-2" placeholder="Поиск товаров..." style="box-shadow: none;">
+                                <input type="text" name="text" class="form-control border-2 border-primary rounded-pill ps-4 pe-5 py-2" placeholder="Поиск товаров..." style="box-shadow: none;" value="<?= Html::encode(Yii::$app->request->get('text', '')) ?>">
                                 <button class="btn btn-primary rounded-pill position-absolute end-0 top-0 bottom-0 m-1 px-3" type="submit" style="z-index: 5;">
                                     <i class="fas fa-search"></i>
                                 </button>

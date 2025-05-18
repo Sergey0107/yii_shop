@@ -3,6 +3,7 @@
 namespace frontend\controllers;
 
 use backend\models\Product;
+use Yii;
 use yii\web\Controller;
 
 class CatalogController extends Controller
@@ -18,6 +19,7 @@ class CatalogController extends Controller
         $sizeId = $queryParams['size'] ?? null;
         $priceMin = $queryParams['min_price'] ?? null;
         $priceMax = $queryParams['max_price'] ?? null;
+        $searchText = Yii::$app->request->get('text');
 
         $propertyValues = $queryParams['properties'] ?? [];
 
@@ -30,6 +32,7 @@ class CatalogController extends Controller
         if ($sizeId) $query->andWhere(['size_id' => $sizeId]);
         if ($priceMin) $query->andWhere(['>=', 'price', $priceMin]);
         if ($priceMax) $query->andWhere(['<=', 'price', $priceMax]);
+        if ($searchText) $query->andWhere(['like', 'name', $searchText]);
 
         if (!empty($propertyValues)) {
             foreach ($propertyValues as $i => $propertyValueId) {
@@ -41,7 +44,7 @@ class CatalogController extends Controller
                 )->andWhere(["$alias.value_id" => $propertyValueId]);
             }
         }
-
+        //echo $query->createCommand()->rawSql; exit();
         $products = $query->all();
 
         return $this->render('index', [
