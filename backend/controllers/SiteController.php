@@ -8,6 +8,7 @@ use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
 use yii\web\Controller;
 use yii\web\Response;
+use yii\web\ForbiddenHttpException;
 
 /**
  * Site controller
@@ -24,20 +25,37 @@ class SiteController extends Controller
                 'class' => AccessControl::class,
                 'rules' => [
                     [
-                        'actions' => ['login', 'error'],
                         'allow' => true,
+                        'actions' => ['login', 'error'],
+                        'roles' => ['?', '@'], // Разрешаем доступ всем (и гостям, и авторизованным)
                     ],
                     [
-                        'actions' => ['logout', 'index'],
                         'allow' => true,
+                        'actions' => ['logout'],
                         'roles' => ['@'],
                     ],
+                    [
+                        'allow' => true,
+                        'actions' => ['index'],
+                        'roles' => ['admin'],
+                    ],
                 ],
+                'denyCallback' => function ($rule, $action) {
+                    if ($action->id === 'error') {
+                        return true; // Разрешаем доступ к странице ошибки всегда
+                    }
+
+                    if (Yii::$app->user->isGuest) {
+                        return $this->redirect(['site/login']);
+                    }
+
+                    return $this->redirect(['site/error']);
+                },
             ],
             'verbs' => [
                 'class' => VerbFilter::class,
                 'actions' => [
-                    'logout' => ['post'],
+
                 ],
             ],
         ];
@@ -51,6 +69,8 @@ class SiteController extends Controller
         return [
             'error' => [
                 'class' => \yii\web\ErrorAction::class,
+                'view' => 'error',
+                'layout' => 'blank', // Use a lightweight layout for the error page
             ],
         ];
     }
@@ -98,7 +118,6 @@ class SiteController extends Controller
     public function actionLogout()
     {
         Yii::$app->user->logout();
-
-        return $this->goHome();
+        return $this->redirect(['site/login']);
     }
 }
