@@ -99,8 +99,24 @@ class SiteController extends Controller
         $this->layout = 'blank';
 
         $model = new LoginForm();
-        if ($model->load(Yii::$app->request->post()) && $model->login()) {
-            return $this->goBack();
+        if ($model->load(Yii::$app->request->post())) {
+            if ($model->login()) {
+                // Проверяем роли через RBAC
+                $user = Yii::$app->user->identity;
+                $auth = Yii::$app->authManager;
+                $userRoles = $auth->getRolesByUser($user->id);
+
+                $allowedRoles = ['admin', 'manager'];
+                $hasAccess = !empty(array_intersect(array_keys($userRoles), $allowedRoles));
+
+                if ($hasAccess) {
+                    return $this->goBack();
+                } else {
+                    Yii::$app->user->logout();
+                    Yii::$app->session->setFlash('error', 'Доступ разрешен только администраторам и менеджерам.');
+                    return $this->refresh();
+                }
+            }
         }
 
         $model->password = '';
