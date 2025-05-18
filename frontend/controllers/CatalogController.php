@@ -13,10 +13,11 @@ class CatalogController extends Controller
 
         $colorId = $queryParams['color'] ?? null;
         $countryId = $queryParams['country'] ?? null;
-        $deliveryId = $queryParams['delivery'] ?? null;
         $materialId = $queryParams['material'] ?? null;
         $typeId = $queryParams['type'] ?? null;
         $sizeId = $queryParams['size'] ?? null;
+        $priceMin = $queryParams['min_price'] ?? null;
+        $priceMax = $queryParams['max_price'] ?? null;
 
         $propertyValues = $queryParams['properties'] ?? [];
 
@@ -27,6 +28,8 @@ class CatalogController extends Controller
         if ($materialId) $query->andWhere(['material_id' => $materialId]);
         if ($typeId) $query->andWhere(['type_id' => $typeId]);
         if ($sizeId) $query->andWhere(['size_id' => $sizeId]);
+        if ($priceMin) $query->andWhere(['>=', 'price', $priceMin]);
+        if ($priceMax) $query->andWhere(['<=', 'price', $priceMax]);
 
         if (!empty($propertyValues)) {
             foreach ($propertyValues as $i => $propertyValueId) {
@@ -38,9 +41,6 @@ class CatalogController extends Controller
                 )->andWhere(["$alias.value_id" => $propertyValueId]);
             }
         }
-
-//        echo $query->createCommand()->rawSql;
-//        exit;
 
         $products = $query->all();
 

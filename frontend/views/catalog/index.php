@@ -18,9 +18,22 @@ $countries = \backend\models\Country::find()->select(['id', 'name'])->asArray()-
 $materials = \backend\models\Material::find()->select(['id', 'name'])->asArray()->all();
 $types = \backend\models\Type::find()->select(['id', 'name'])->asArray()->all();
 $sizes = \backend\models\Size::find()->select(['id', 'value'])->asArray()->all();
+$minProductPrice = \backend\models\Product::find()->min('price') ?: 0;
+$maxProductPrice = \backend\models\Product::find()->max('price') ?: 100000;
 
 $properties = \backend\models\Property::find()->with('values')->all();
+
+$request = Yii::$app->request;
+$selectedTypes = $request->get('type', []);
+$selectedColors = $request->get('color', []);
+$selectedSizes = $request->get('size', []);
+$selectedPriceMin = $request->get('min_price', $minProductPrice);
+$selectedPriceMax = $request->get('max_price', $maxProductPrice);
+$selectedMaterials = $request->get('material', []);
+$selectedCountries = $request->get('country', []);
+$selectedProperties = $request->get('properties', []);
 ?>
+
 <style>
     /* === Глобальные переменные и базовые стили === */
     :root {
@@ -79,26 +92,23 @@ $properties = \backend\models\Property::find()->with('values')->all();
 
     .container {
         width: 100%;
-        max-width: 1600px; /* Увеличили максимальную ширину */
-        padding: 0 2rem; /* Больше отступы по бокам */
+        max-width: 1600px;
+        padding: 0 2rem;
         margin: 0 auto;
     }
 
-    /* === Хедер и навигация === */
     .site-header {
-        position: absolute; /* Меняем sticky на absolute */
+        position: absolute;
         top: 0;
         left: 0;
         right: 0;
         z-index: 50;
-        /* Остальные стили без изменений */
     }
 
-    /* === Герой-баннер === */
     .hero-banner {
         background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
         color: white;
-        padding: 2rem 0; /* Можно оставить отступ только снизу */
+        padding: 2rem 0;
         margin-top: 8rem;
         position: relative;
         overflow: hidden;
@@ -155,14 +165,12 @@ $properties = \backend\models\Property::find()->with('values')->all();
         height: 1.25rem;
     }
 
-    /* === Основной макет === */
     .main-layout {
         display: flex;
         gap: 1rem;
         padding: 1rem 0;
     }
 
-    /* === Боковая панель фильтров === */
     .sidebar-filters {
         width: 18rem;
         flex-shrink: 0;
@@ -282,7 +290,7 @@ $properties = \backend\models\Property::find()->with('values')->all();
 
     .price-input-container {
         flex: 1;
-        min-width: 0; /* Важно для правильной работы flex */
+        min-width: 0;
     }
 
     .price-input {
@@ -302,7 +310,7 @@ $properties = \backend\models\Property::find()->with('values')->all();
 
     .price-slider-container {
         width: 100%;
-        padding: 0 0.625rem; /* Компенсация для ручек */
+        padding: 0 0.625rem;
         box-sizing: border-box;
     }
 
@@ -365,7 +373,6 @@ $properties = \backend\models\Property::find()->with('values')->all();
         background-color: var(--primary-hover);
     }
 
-    /* === Контент === */
     .content {
         flex: 1;
     }
@@ -389,16 +396,16 @@ $properties = \backend\models\Property::find()->with('values')->all();
         cursor: pointer;
     }
 
-    /* === Сетка товаров === */
     .product-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
         gap: 0.5rem;
     }
+
     @media (max-width: 768px) {
         .product-grid {
             grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
-            gap: 0.5rem; /* На мобильных */
+            gap: 0.5rem;
         }
         .product-card {
             height: 14rem;
@@ -410,9 +417,9 @@ $properties = \backend\models\Property::find()->with('values')->all();
         border-radius: var(--radius-lg);
         overflow: hidden;
         box-shadow: var(--shadow);
-        width: 100%; /* Занимает всю ширину ячейки */
-        height: auto; /* Автоматическая высота */
-        padding: 0.25rem; /* Уменьшенные отступы */
+        width: 100%;
+        height: auto;
+        padding: 0.25rem;
         position: relative;
         display: flex;
         flex-direction: column;
@@ -481,7 +488,7 @@ $properties = \backend\models\Property::find()->with('values')->all();
     }
 
     .product-info {
-        padding: 0.5rem; /* Уменьшенные внутренние отступы */
+        padding: 0.5rem;
         flex-grow: 1;
         display: flex;
         flex-direction: column;
@@ -596,7 +603,6 @@ $properties = \backend\models\Property::find()->with('values')->all();
         height: 1.25rem;
     }
 
-    /* === Пагинация === */
     .pagination {
         display: flex;
         justify-content: center;
@@ -630,8 +636,6 @@ $properties = \backend\models\Property::find()->with('values')->all();
         cursor: not-allowed;
     }
 
-
-    /* === Адаптивность === */
     @media (max-width: 768px) {
         .footer-container {
             grid-template-columns: 1fr 1fr;
@@ -662,7 +666,6 @@ $properties = \backend\models\Property::find()->with('values')->all();
         }
     }
 
-    /* === Адаптивность === */
     @media (max-width: 1024px) {
         .sidebar-filters {
             position: fixed;
@@ -720,7 +723,6 @@ $properties = \backend\models\Property::find()->with('values')->all();
         }
     }
 
-    /* === Анимации === */
     @keyframes fadeIn {
         from { opacity: 0; }
         to { opacity: 1; }
@@ -739,7 +741,6 @@ $properties = \backend\models\Property::find()->with('values')->all();
         animation: slideUp 0.5s ease forwards;
     }
 
-    /* === Кастомный скроллбар === */
     ::-webkit-scrollbar {
         width: 0.5rem;
     }
@@ -757,7 +758,6 @@ $properties = \backend\models\Property::find()->with('values')->all();
         background: var(--primary-hover);
     }
 </style>
-
 
 <!-- Герой-баннер -->
 <section class="hero-banner">
@@ -781,7 +781,7 @@ $properties = \backend\models\Property::find()->with('values')->all();
             <div class="filters-container">
                 <div class="filters-header">
                     <h3 class="filters-title">Фильтры</h3>
-                    <span class="reset-filters" id="resetFiltersBtn">Сбросить все</span>
+                    <span class="reset-filters" id="resetFiltersBtn"> <a href="<?= Url::to(['catalog/index']) ?>" class="filters">Сбросить все</a></span>
                 </div>
 
                 <form method="get" action="<?= Url::to(['catalog/index']) ?>">
@@ -791,10 +791,12 @@ $properties = \backend\models\Property::find()->with('values')->all();
                         <div class="price-filter-wrapper">
                             <div class="price-inputs">
                                 <div class="price-input-container">
-                                    <input type="number" class="price-input" placeholder="От" id="minPrice" min="0">
+                                    <input type="number" class="price-input" placeholder="От" id="minPrice" name="min_price"
+                                           value="<?= Html::encode($selectedPriceMin) ?>" min="<?= $selectedPriceMin ?>" max="<?= $selectedPriceMax ?>">
                                 </div>
                                 <div class="price-input-container">
-                                    <input type="number" class="price-input" placeholder="До" id="maxPrice" min="0">
+                                    <input type="number" class="price-input" placeholder="До" id="maxPrice" name="max_price"
+                                           value="<?= Html::encode($selectedPriceMax) ?>" min="<?= $selectedPriceMin ?>" max="<?= $selectedPriceMax ?>">
                                 </div>
                             </div>
                             <div class="price-slider-container">
@@ -813,7 +815,7 @@ $properties = \backend\models\Property::find()->with('values')->all();
                         <div class="filter-options">
                             <?php foreach ($types as $type): ?>
                                 <div class="filter-option">
-                                    <input type="checkbox" id="type-<?= $type['id'] ?>" name="type[]" value="<?= $type['id'] ?>">
+                                    <input type="checkbox" id="type-<?= $type['id'] ?>" name="type[]" value="<?= $type['id'] ?>" <?= in_array($type['id'], $selectedTypes) ? 'checked' : '' ?>>
                                     <label for="type-<?= $type['id'] ?>"><?= Html::encode($type['name']) ?></label>
                                 </div>
                             <?php endforeach; ?>
@@ -826,7 +828,7 @@ $properties = \backend\models\Property::find()->with('values')->all();
                         <div class="filter-options">
                             <?php foreach ($colors as $color): ?>
                                 <div class="filter-option">
-                                    <input type="checkbox" id="color-<?= $color['id'] ?>" name="color[]" value="<?= $color['id'] ?>">
+                                    <input type="checkbox" id="color-<?= $color['id'] ?>" name="color[]" value="<?= $color['id'] ?>" <?= in_array($color['id'], $selectedColors) ? 'checked' : '' ?>>
                                     <label for="color-<?= $color['id'] ?>"><?= Html::encode($color['name']) ?></label>
                                 </div>
                             <?php endforeach; ?>
@@ -839,7 +841,7 @@ $properties = \backend\models\Property::find()->with('values')->all();
                         <div class="filter-options">
                             <?php foreach ($sizes as $size): ?>
                                 <div class="filter-option">
-                                    <input type="checkbox" id="size-<?= $size['id'] ?>" name="size[]" value="<?= $size['id'] ?>">
+                                    <input type="checkbox" id="size-<?= $size['id'] ?>" name="size[]" value="<?= $size['id'] ?>" <?= in_array($size['id'], $selectedSizes) ? 'checked' : '' ?>>
                                     <label for="size-<?= $size['id'] ?>"><?= Html::encode($size['value']) ?></label>
                                 </div>
                             <?php endforeach; ?>
@@ -852,7 +854,7 @@ $properties = \backend\models\Property::find()->with('values')->all();
                         <div class="filter-options">
                             <?php foreach ($materials as $material): ?>
                                 <div class="filter-option">
-                                    <input type="checkbox" id="material-<?= $material['id'] ?>" name="material[]" value="<?= $material['id'] ?>">
+                                    <input type="checkbox" id="material-<?= $material['id'] ?>" name="material[]" value="<?= $material['id'] ?>" <?= in_array($material['id'], $selectedMaterials) ? 'checked' : '' ?>>
                                     <label for="material-<?= $material['id'] ?>"><?= Html::encode($material['name']) ?></label>
                                 </div>
                             <?php endforeach; ?>
@@ -865,7 +867,7 @@ $properties = \backend\models\Property::find()->with('values')->all();
                         <div class="filter-options">
                             <?php foreach ($countries as $country): ?>
                                 <div class="filter-option">
-                                    <input type="checkbox" id="country-<?= $country['id'] ?>" name="country[]" value="<?= $country['id'] ?>">
+                                    <input type="checkbox" id="country-<?= $country['id'] ?>" name="country[]" value="<?= $country['id'] ?>" <?= in_array($country['id'], $selectedCountries) ? 'checked' : '' ?>>
                                     <label for="country-<?= $country['id'] ?>"><?= Html::encode($country['name']) ?></label>
                                 </div>
                             <?php endforeach; ?>
@@ -879,7 +881,7 @@ $properties = \backend\models\Property::find()->with('values')->all();
                             <div class="filter-options">
                                 <?php foreach ($property->values as $value): ?>
                                     <div class="filter-option">
-                                        <input type="checkbox" id="prop-<?= $value->id ?>" name="properties[]" value="<?= $value->id ?>">
+                                        <input type="checkbox" id="prop-<?= $value->id ?>" name="properties[]" value="<?= $value->id ?>" <?= in_array($value->id, $selectedProperties) ? 'checked' : '' ?>>
                                         <label for="prop-<?= $value->id ?>"><?= Html::encode($value->value) ?></label>
                                     </div>
                                 <?php endforeach; ?>
@@ -1022,60 +1024,23 @@ $properties = \backend\models\Property::find()->with('values')->all();
     </div>
 </div>
 
-
-
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Мобильные фильтры
-        const mobileFilterToggle = document.getElementById('mobileFilterToggle');
-        const sidebarFilters = document.getElementById('sidebarFilters');
+        // Устанавливаем минимальную и максимальную цены из PHP
+        const minPrice = <?= $minProductPrice ?>;
+        const maxPrice = <?= $maxProductPrice ?>;
 
-        mobileFilterToggle.addEventListener('click', function () {
-            sidebarFilters.classList.toggle('active');
-        });
+        // Текущие значения из полей ввода или по умолчанию
+        let minVal = parseInt(document.getElementById('minPrice').value) || minPrice;
+        let maxVal = parseInt(document.getElementById('maxPrice').value) || maxPrice;
 
-        // Сброс фильтров
-        const resetFiltersBtn = document.getElementById('resetFiltersBtn');
-        const resetFiltersBtn2 = document.getElementById('resetFiltersBtn2');
-
-        function resetFilters() {
-            window.location.href = '<?= Url::to(['catalog/index']) ?>';
-        }
-
-        resetFiltersBtn.addEventListener('click', resetFilters);
-        resetFiltersBtn2.addEventListener('click', resetFilters);
-
-        // Сортировка
-        const sortSelect = document.getElementById('sortSelect');
-        sortSelect.addEventListener('change', function () {
-            const url = new URL(window.location.href);
-            url.searchParams.set('sort', this.value);
-            window.location.href = url.toString();
-        });
-
-        // Избранное
-        const wishlistButtons = document.querySelectorAll('.product-wishlist');
-        wishlistButtons.forEach(button => {
-            button.addEventListener('click', function (e) {
-                e.preventDefault();
-                this.classList.toggle('active');
-
-                // Здесь можно добавить AJAX-запрос для добавления в избранное
-            });
-        });
-
-        // Слайдер цены
+        // Получаем элементы DOM
         const minPriceInput = document.getElementById('minPrice');
         const maxPriceInput = document.getElementById('maxPrice');
         const minPriceHandle = document.getElementById('minPriceHandle');
         const maxPriceHandle = document.getElementById('maxPriceHandle');
         const priceSliderFill = document.getElementById('priceSliderFill');
-        const priceSlider = document.querySelector('.price-slider');
-
-        let minPrice = 0;
-        let maxPrice = 50000;
-        let minVal = 0;
-        let maxVal = 50000;
+        const priceSliderTrack = document.querySelector('.price-slider-track');
 
         // Установка начальных значений
         minPriceInput.placeholder = minPrice;
@@ -1083,12 +1048,22 @@ $properties = \backend\models\Property::find()->with('values')->all();
 
         // Обновление слайдера
         function updateSlider() {
-            const sliderWidth = priceSlider.offsetWidth;
+            const sliderWidth = priceSliderTrack.offsetWidth;
             const minPosition = ((minVal - minPrice) / (maxPrice - minPrice)) * sliderWidth;
             const maxPosition = ((maxVal - minPrice) / (maxPrice - minPrice)) * sliderWidth;
 
             minPriceHandle.style.left = `${minPosition}px`;
             maxPriceHandle.style.left = `${maxPosition}px`;
+            priceSliderFill.style.left = `${minPosition}px`;
+            priceSliderFill.style.width = `${maxPosition - minPosition}px`;
+        }
+
+        // Обновление заполнения слайдера
+        function updateSliderFill() {
+            const sliderWidth = priceSliderTrack.offsetWidth;
+            const minPosition = parseFloat(minPriceHandle.style.left || '0');
+            const maxPosition = parseFloat(maxPriceHandle.style.left || '0');
+
             priceSliderFill.style.left = `${minPosition}px`;
             priceSliderFill.style.width = `${maxPosition - minPosition}px`;
         }
@@ -1106,7 +1081,7 @@ $properties = \backend\models\Property::find()->with('values')->all();
             function onMouseMove(e) {
                 if (!isDragging) return;
 
-                const sliderRect = priceSlider.getBoundingClientRect();
+                const sliderRect = priceSliderTrack.getBoundingClientRect();
                 let newPosition = e.clientX - sliderRect.left;
                 const sliderWidth = sliderRect.width;
 
@@ -1141,33 +1116,75 @@ $properties = \backend\models\Property::find()->with('values')->all();
             }
         }
 
-        function updateSliderFill() {
-            const sliderWidth = priceSlider.offsetWidth;
-            const minPosition = parseFloat(minPriceHandle.style.left || '0');
-            const maxPosition = parseFloat(maxPriceHandle.style.left || '0');
+        // Мобильные фильтры
+        const mobileFilterToggle = document.getElementById('mobileFilterToggle');
+        const sidebarFilters = document.getElementById('sidebarFilters');
 
-            priceSliderFill.style.left = `${minPosition}px`;
-            priceSliderFill.style.width = `${maxPosition - minPosition}px`;
+        if (mobileFilterToggle && sidebarFilters) {
+            mobileFilterToggle.addEventListener('click', function () {
+                sidebarFilters.classList.toggle('active');
+            });
         }
 
-        setupHandle(minPriceHandle, true);
-        setupHandle(maxPriceHandle, false);
+        // Сброс фильтров
+        const resetFiltersBtn = document.getElementById('resetFiltersBtn');
+        const resetFiltersBtn2 = document.getElementById('resetFiltersBtn2');
+
+        function resetFilters() {
+            window.location.href = '<?= Url::to(['catalog/index']) ?>';
+        }
+
+        if (resetFiltersBtn) {
+            resetFiltersBtn.addEventListener('click', resetFilters);
+        }
+
+        if (resetFiltersBtn2) {
+            resetFiltersBtn2.addEventListener('click', resetFilters);
+        }
+
+        // Сортировка
+        const sortSelect = document.getElementById('sortSelect');
+        if (sortSelect) {
+            sortSelect.addEventListener('change', function () {
+                const url = new URL(window.location.href);
+                url.searchParams.set('sort', this.value);
+                window.location.href = url.toString();
+            });
+        }
+
+        // Избранное
+        const wishlistButtons = document.querySelectorAll('.product-wishlist');
+        wishlistButtons.forEach(button => {
+            button.addEventListener('click', function (e) {
+                e.preventDefault();
+                this.classList.toggle('active');
+            });
+        });
 
         // Обработчики для полей ввода
         minPriceInput.addEventListener('input', function () {
             minVal = parseInt(this.value) || minPrice;
+            if (minVal > maxVal) {
+                minVal = maxVal;
+                this.value = minVal;
+            }
             updateSlider();
         });
 
         maxPriceInput.addEventListener('input', function () {
             maxVal = parseInt(this.value) || maxPrice;
+            if (maxVal < minVal) {
+                maxVal = minVal;
+                this.value = maxVal;
+            }
             updateSlider();
         });
+
+        // Настройка обработчиков слайдера
+        setupHandle(minPriceHandle, true);
+        setupHandle(maxPriceHandle, false);
 
         // Инициализация слайдера
         updateSlider();
     });
 </script>
-
-
-
