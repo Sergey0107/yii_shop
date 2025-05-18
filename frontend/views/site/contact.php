@@ -56,19 +56,19 @@ $this->title = 'Контакты';
                 <div class="contact-info">
                     <h2>Как нас найти</h2>
                     <div class="info-item">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#17a2b8" viewBox="0 0 24 24">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#2563eb" viewBox="0 0 24 24">
                             <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
                         </svg>
                         <p>г. Кострома, ул. Советская, д. 10</p>
                     </div>
                     <div class="info-item">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#17a2b8" viewBox="0 0 24 24">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#2563eb" viewBox="0 0 24 24">
                             <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V6h16v12z"/>
                         </svg>
                         <p>Пн–Пт: 9:00–18:00, Сб–Вс: выходной</p>
                     </div>
                     <div class="info-item">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#17a2b8" viewBox="0 0 24 24">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#2563eb" viewBox="0 0 24 24">
                             <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-4H6V8h12v2z"/>
                         </svg>
                         <p>Email: info@example.com</p>
@@ -116,7 +116,7 @@ $this->title = 'Контакты';
     }
 
     .contact-form .btn-primary {
-        background-color: #17a2b8;
+        background-color: #2563eb;
         border: none;
         padding: 10px 20px;
         border-radius: 8px;
@@ -125,7 +125,7 @@ $this->title = 'Контакты';
     }
 
     .contact-form .btn-primary:hover {
-        background-color: #138496;
+        background-color: #2563eb;
     }
 
     .captcha-container {

@@ -320,11 +320,11 @@ AppAsset::register($this);
                     <div class="d-flex gap-4">
                         <div class="top-bar-item">
                             <i class="fas fa-phone-alt me-2"></i>
-                            <span>+7 (123) 456-78-90</span>
+                            <span>+7 (953) 663-51-45</span>
                         </div>
                         <div class="top-bar-item">
                             <i class="fas fa-map-marker-alt me-2"></i>
-                            <span>Москва, ул. Примерная, 123</span>
+                            <span>Кострома, ул. Советская, 142</span>
                         </div>
                     </div>
                     <div class="d-flex gap-3">
@@ -510,7 +510,7 @@ AppAsset::register($this);
                     <ul class="footer-links">
                         <li class="footer-contact-item">
                             <i class="fas fa-phone footer-icon"></i>
-                            <a href="tel:+78005553535" class="footer-link">8 (800) 555-35-35</a>
+                            <a href="tel:+79536635145" class="footer-link">8 (953) 663-51-45</a>
                         </li>
                         <li class="footer-contact-item">
                             <i class="fas fa-envelope footer-icon"></i>
@@ -518,7 +518,7 @@ AppAsset::register($this);
                         </li>
                         <li class="footer-contact-item">
                             <i class="fas fa-map-marker-alt footer-icon"></i>
-                            <span>Москва, ул. Примерная, 123</span>
+                            <span>Кострома, ул. Советская, 142</span>
                         </li>
                         <li class="footer-contact-item">
                             <i class="fas fa-clock footer-icon"></i>
