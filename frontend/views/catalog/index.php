@@ -2,8 +2,31 @@
 
 /** @var yii\web\View $this */
 /** @var Product[] $products */
+/** @var Pagination $pages */
+/** @var string $sort */
+/** @var array $colors */
+/** @var array $countries */
+/** @var array $materials */
+/** @var array $types */
+/** @var array $sizes */
+/** @var float $minProductPrice */
+/** @var float $maxProductPrice */
+/** @var array $properties */
+/** @var array $selectedTypes */
+/** @var array $selectedColors */
+/** @var array $selectedSizes */
+/** @var float $selectedPriceMin */
+/** @var float $selectedPriceMax */
+/** @var array $selectedMaterials */
+/** @var array $selectedCountries */
+/** @var array $selectedProperties */
 
-use backend\models\Product;
+use backend\models\Color;
+use backend\models\Country;
+use backend\models\Material;
+use backend\models\Size;
+use backend\models\Type;
+use backend\models\Property;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
 use yii\helpers\Url;
@@ -12,28 +35,6 @@ use frontend\assets\BackendAsset;
 $backendUploads = BackendAsset::register($this);
 
 $this->title = 'Каталог';
-
-$colors = \backend\models\Color::find()->select(['id', 'name'])->asArray()->all();
-$countries = \backend\models\Country::find()->select(['id', 'name'])->asArray()->all();
-$materials = \backend\models\Material::find()->select(['id', 'name'])->asArray()->all();
-$types = \backend\models\Type::find()->select(['id', 'name'])->asArray()->all();
-$sizes = \backend\models\Size::find()->select(['id', 'value'])->asArray()->all();
-$minProductPrice = \backend\models\Product::find()->min('price') ?: 0;
-$maxProductPrice = \backend\models\Product::find()->max('price') ?: 100000;
-
-$properties = \backend\models\Property::find()->with('values')->all();
-
-$request = Yii::$app->request;
-$selectedTypes = $request->get('type', []);
-$selectedColors = $request->get('color', []);
-$selectedSizes = $request->get('size', []);
-$selectedPriceMin = $request->get('min_price', $minProductPrice);
-$selectedPriceMax = $request->get('max_price', $maxProductPrice);
-$selectedMaterials = $request->get('material', []);
-$selectedCountries = $request->get('country', []);
-$selectedProperties = $request->get('properties', []);
-
-$sort = $request->get('sort', 'popular');
 ?>
 
 <style>
@@ -605,11 +606,13 @@ $sort = $request->get('sort', 'popular');
         height: 1.25rem;
     }
 
-    .pagination {
+    .pagination-list {
         display: flex;
+        list-style: none;
+        padding: 0;
+        margin: 2rem 0 0;
         justify-content: center;
         gap: 0.5rem;
-        margin-top: 3rem;
     }
 
     .page-item {
@@ -636,6 +639,21 @@ $sort = $request->get('sort', 'popular');
     .page-item.disabled {
         opacity: 0.5;
         cursor: not-allowed;
+    }
+
+    .page-link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .page-link svg {
+        width: 1rem;
+        height: 1rem;
     }
 
     @media (max-width: 768px) {
@@ -775,18 +793,17 @@ $sort = $request->get('sort', 'popular');
     </div>
 </section>
 
-<!-- Основной контент -->
 <div class="container">
     <div class="main-layout">
-        <!-- Боковая панель фильтров -->
         <aside class="sidebar-filters" id="sidebarFilters">
             <div class="filters-container">
                 <div class="filters-header">
                     <h3 class="filters-title">Фильтры</h3>
-                    <span class="reset-filters" id="resetFiltersBtn"> <a href="<?= Url::to(['catalog/index']) ?>" class="filters">Сбросить все</a></span>
+                    <span class="reset-filters" id="resetFiltersBtn"><a href="<?= Url::to(['catalog/index']) ?>" class="filters">Сбросить все</a></span>
                 </div>
 
                 <form method="get" action="<?= Url::to(['catalog/index']) ?>">
+                    <input type="hidden" name="page" value="1">
                     <!-- Цена -->
                     <div class="filter-group">
                         <div class="filter-group-title">Цена, ₽</div>
@@ -794,11 +811,11 @@ $sort = $request->get('sort', 'popular');
                             <div class="price-inputs">
                                 <div class="price-input-container">
                                     <input type="number" class="price-input" placeholder="От" id="minPrice" name="min_price"
-                                           value="<?= Html::encode($selectedPriceMin) ?>" min="<?= $selectedPriceMin ?>" max="<?= $selectedPriceMax ?>">
+                                           value="<?= Html::encode($selectedPriceMin) ?>" min="<?= $minProductPrice ?>" max="<?= $maxProductPrice ?>">
                                 </div>
                                 <div class="price-input-container">
                                     <input type="number" class="price-input" placeholder="До" id="maxPrice" name="max_price"
-                                           value="<?= Html::encode($selectedPriceMax) ?>" min="<?= $selectedPriceMin ?>" max="<?= $selectedPriceMax ?>">
+                                           value="<?= Html::encode($selectedPriceMax) ?>" min="<?= $minProductPrice ?>" max="<?= $maxProductPrice ?>">
                                 </div>
                             </div>
                             <div class="price-slider-container">
@@ -896,15 +913,14 @@ $sort = $request->get('sort', 'popular');
             </div>
         </aside>
 
-        <!-- Основной контент -->
         <main class="content">
             <div class="content-header">
-                <div class="results-count">Найдено <?= count($products) ?> товаров</div>
+                <div class="results-count">Найдено <?= $pages->totalCount ?> товаров</div>
                 <select class="sort-select" id="sortSelect">
-                    <option value="popular" <?= $sort === 'is_popular' ? 'selected' : '' ?>>По популярности</option>
+                    <option value="popular" <?= $sort === 'popular' ? 'selected' : '' ?>>По популярности</option>
                     <option value="price-asc" <?= $sort === 'price-asc' ? 'selected' : '' ?>>По возрастанию цены</option>
                     <option value="price-desc" <?= $sort === 'price-desc' ? 'selected' : '' ?>>По убыванию цены</option>
-                    <option value="newest" <?= $sort === 'is_new' ? 'selected' : '' ?>>Сначала новинки</option>
+                    <option value="newest" <?= $sort === 'newest' ? 'selected' : '' ?>>Сначала новинки</option>
                     <option value="rating" <?= $sort === 'rating' ? 'selected' : '' ?>>По рейтингу</option>
                 </select>
             </div>
@@ -913,7 +929,7 @@ $sort = $request->get('sort', 'popular');
                 <?php if ($products): ?>
                     <?php foreach ($products as $product): ?>
                         <div class="product-card fade-in">
-                            <?php if (rand(0, 1)): ?>
+                            <?php if ($product->is_new): ?>
                                 <span class="product-badge">Новинка</span>
                             <?php elseif (rand(0, 1)): ?>
                                 <span class="product-badge" style="background-color: var(--danger);">Скидка <?= rand(10, 30) ?>%</span>
@@ -934,13 +950,13 @@ $sort = $request->get('sort', 'popular');
                             </a>
 
                             <div class="product-info">
-                                <span class="product-category"><?= ArrayHelper::getValue($types, array_rand($types))['name'] ?></span>
+                                <span class="product-category"><?= ArrayHelper::getValue($types, array_search($product->type_id, array_column($types, 'id')), ['name' => 'Unknown'])['name'] ?></span>
                                 <h3 class="product-title"><?= Html::encode($product->name) ?></h3>
 
                                 <div class="product-rating">
                                     <div class="stars">
                                         <?php
-                                        $rating = rand(30, 50) / 10;
+                                        $rating = $product->rating ?? rand(30, 50) / 10;
                                         $fullStars = floor($rating);
                                         $hasHalfStar = $rating - $fullStars >= 0.5;
                                         ?>
@@ -961,7 +977,7 @@ $sort = $request->get('sort', 'popular');
                                             <?php endif; ?>
                                         <?php endfor; ?>
                                     </div>
-                                    <span class="rating-count">(<?= rand(10, 150) ?>)</span>
+                                    <span class="rating-count">(<?= $product->review_count ?? rand(10, 150) ?>)</span>
                                 </div>
 
                                 <div class="product-price">
@@ -1004,23 +1020,18 @@ $sort = $request->get('sort', 'popular');
                 <?php endif; ?>
             </div>
 
-            <!-- Пагинация -->
             <div class="pagination">
-                <div class="page-item disabled">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </div>
-                <div class="page-item active">1</div>
-                <div class="page-item">2</div>
-                <div class="page-item">3</div>
-                <div class="page-item">4</div>
-                <div class="page-item">5</div>
-                <div class="page-item">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </div>
+                <?= \yii\widgets\LinkPager::widget([
+                    'pagination' => $pages,
+                    'options' => ['class' => 'pagination-list'],
+                    'linkContainerOptions' => ['class' => 'page-item'],
+                    'linkOptions' => ['class' => 'page-link'],
+                    'activePageCssClass' => 'active',
+                    'disabledPageCssClass' => 'disabled',
+                    'prevPageLabel' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+                    'nextPageLabel' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+                    'maxButtonCount' => 5,
+                ]) ?>
             </div>
         </main>
     </div>
@@ -1149,23 +1160,22 @@ $sort = $request->get('sort', 'popular');
         if (sortSelect) {
             sortSelect.addEventListener('change', function() {
                 const url = new URL(window.location.href);
+                const params = new URLSearchParams(url.search);
 
-                // Удаляем параметр page (если есть) при изменении сортировки
-                url.searchParams.delete('page');
+                // Обновляем только параметр сортировки
+                params.set('sort', this.value);
 
-                // Устанавливаем новый параметр сортировки
-                url.searchParams.set('sort', this.value);
+                // Сбрасываем пагинацию на первую страницу при изменении сортировки
+                params.set('page', '1');
 
-                // Перенаправляем на новый URL
-                window.location.href = url.toString();
+                // Формируем новый URL
+                window.location.href = `${url.pathname}?${params.toString()}`;
             });
 
             // Устанавливаем выбранное значение из URL
             const urlParams = new URLSearchParams(window.location.search);
-            const sortParam = urlParams.get('sort');
-            if (sortParam) {
-                sortSelect.value = sortParam;
-            }
+            const sortParam = urlParams.get('sort') || 'popular';
+            sortSelect.value = sortParam;
         }
 
         // Избранное

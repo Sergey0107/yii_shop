@@ -4,6 +4,7 @@ namespace frontend\controllers;
 
 use backend\models\Product;
 use Yii;
+use yii\data\Pagination;
 use yii\web\Controller;
 
 class CatalogController extends Controller
@@ -46,6 +47,9 @@ class CatalogController extends Controller
             case 'newest':
                 $query->orderBy(['is_new' => SORT_DESC]);
                 break;
+            case 'rating':
+                $query->orderBy(['rating' => SORT_DESC]); // Add this if you have a rating field
+                break;
             case 'popular':
             default:
                 $query->orderBy(['is_popular' => SORT_DESC]);
@@ -55,18 +59,41 @@ class CatalogController extends Controller
         if (!empty($propertyValues)) {
             foreach ($propertyValues as $i => $propertyValueId) {
                 $alias = "pp_$i";
-
                 $query->innerJoin(
                     ["$alias" => '{{%product_property}}'],
                     "$alias.product_id = product.id"
                 )->andWhere(["$alias.value_id" => $propertyValueId]);
             }
         }
-        //echo $query->createCommand()->rawSql; exit();
-        $products = $query->all();
+
+        $countQuery = clone $query;
+        $pages = new Pagination(['totalCount' => $countQuery->count()]);
+        $pages->pageSize = 12;
+
+        $products = $query->offset($pages->offset)
+            ->limit($pages->limit)
+            ->all();
 
         return $this->render('index', [
             'products' => $products,
+            'pages' => $pages,
+            'sort' => $sort, // Pass the sort parameter to the view
+            'colors' => \backend\models\Color::find()->select(['id', 'name'])->asArray()->all(),
+            'countries' => \backend\models\Country::find()->select(['id', 'name'])->asArray()->all(),
+            'materials' => \backend\models\Material::find()->select(['id', 'name'])->asArray()->all(),
+            'types' => \backend\models\Type::find()->select(['id', 'name'])->asArray()->all(),
+            'sizes' => \backend\models\Size::find()->select(['id', 'value'])->asArray()->all(),
+            'minProductPrice' => \backend\models\Product::find()->min('price') ?: 0,
+            'maxProductPrice' => \backend\models\Product::find()->max('price') ?: 100000,
+            'properties' => \backend\models\Property::find()->with('values')->all(),
+            'selectedTypes' => $queryParams['type'] ?? [],
+            'selectedColors' => $queryParams['color'] ?? [],
+            'selectedSizes' => $queryParams['size'] ?? [],
+            'selectedPriceMin' => $queryParams['min_price'] ?? (\backend\models\Product::find()->min('price') ?: 0),
+            'selectedPriceMax' => $queryParams['max_price'] ?? (\backend\models\Product::find()->max('price') ?: 100000),
+            'selectedMaterials' => $queryParams['material'] ?? [],
+            'selectedCountries' => $queryParams['country'] ?? [],
+            'selectedProperties' => $queryParams['properties'] ?? [],
         ]);
     }
 
