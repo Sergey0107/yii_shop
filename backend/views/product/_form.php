@@ -82,14 +82,19 @@ use yii\widgets\ActiveForm;
     <h3>Дополнительные свойства</h3>
 
     <div id="additional-properties">
-        <?php foreach ($properties as $property):
+        <?php if ($properties) { ?>
+            <?php foreach ($properties as $property):
             $selectedValue = null;
-            foreach ($currentProperties as $cp) {
-                if ($cp->property_id == $property->id) {
-                    $selectedValue = $cp->value_id;
-                    break;
+            if ($currentProperties)
+            {
+                foreach ($currentProperties as $cp) {
+                    if ($cp->property_id == $property->id) {
+                        $selectedValue = $cp->value_id;
+                        break;
+                    }
                 }
             }
+
             ?>
             <div class="form-group">
                 <?= Html::label($property->name, "property_{$property->id}") ?>
@@ -101,6 +106,7 @@ use yii\widgets\ActiveForm;
                 ) ?>
             </div>
         <?php endforeach; ?>
+        <?php } ?>
     </div>
 
     <?= $form->field($model, 'is_new')->checkbox() ?>

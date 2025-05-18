@@ -82,6 +82,8 @@ class ProductController extends Controller
         $types = (new \backend\services\SpecificationServices)->getTypes();
         $material = (new \backend\services\SpecificationServices)->getMaterials();
 
+        $properties = Property::find()->all();
+
         if ($model->load(Yii::$app->request->post())) {
             $model->imageFile = UploadedFile::getInstance($model, 'imageFile'); // Получаем загруженный файл
             if ($model->upload()) { // Загружаем файл и сохраняем путь
@@ -100,6 +102,8 @@ class ProductController extends Controller
             'colors' => $colors,
             'types' => $types,
             'materials' => $material,
+            'properties' => $properties,
+            'currentProperties' => null,
         ]);
     }
 
@@ -120,10 +124,8 @@ class ProductController extends Controller
         $types = (new \backend\services\SpecificationServices())->getTypes();
         $materials = (new \backend\services\SpecificationServices())->getMaterials();
 
-        // Все доступные свойства (property)
         $properties = Property::find()->all();
 
-        // Текущие значения свойств у товара
         $currentProperties = ProductProperty::find()
             ->where(['product_id' => $model->id])
             ->with('propertyValue.property')
@@ -131,19 +133,18 @@ class ProductController extends Controller
 
         if ($model->load(Yii::$app->request->post())) {
 
-            // Обработка загрузки изображения
+
             $model->imageFile = UploadedFile::getInstance($model, 'imageFile');
             if ($model->upload()) {
-                // Не сохраняем сразу, чтобы сначала обработать свойства
+
             }
 
-            // +++ Новая часть: обработка свойств +++
             $propertyValues = Yii::$app->request->post('PropertyValues', []);
 
-            // Удаляем старые связи
+
             ProductProperty::deleteAll(['product_id' => $model->id]);
 
-            // Добавляем новые
+
             foreach ($propertyValues as $propertyId => $valueId) {
                 if ($valueId) {
                     $productProperty = new ProductProperty();
@@ -156,10 +157,10 @@ class ProductController extends Controller
                     }
                 }
             }
-            // --- Конец обработки свойств ---
 
-            // Теперь сохраняем саму модель товара
-            if ($model->save(false)) { // false - чтобы не вызывать валидацию повторно
+
+
+            if ($model->save(false)) {
                 return $this->redirect(['view', 'id' => $model->id]);
             }
         }

@@ -1,5 +1,6 @@
 <?php
 
+use backend\models\ProductProperty;
 use yii\helpers\Html;
 
 /** @var yii\web\View $this */
@@ -9,6 +10,8 @@ use yii\helpers\Html;
 /** @var array $countries */
 /** @var array $materials */
 /** @var array $types */
+/** @var backend\models\Property[] $properties */
+/** @var ProductProperty $currentProperties */
 
 $this->title = 'Добавить товар';
 $this->params['breadcrumbs'][] = ['label' => 'Товары', 'url' => ['index']];
@@ -25,6 +28,8 @@ $this->params['breadcrumbs'][] = $this->title;
         'countries' => $countries,
         'materials' => $materials,
         'types' => $types,
+        'properties' => $properties,
+        'currentProperties' => $currentProperties,
     ]) ?>
 
 </div>
