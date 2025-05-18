@@ -19,7 +19,9 @@ class CatalogController extends Controller
         $sizeId = $queryParams['size'] ?? null;
         $priceMin = $queryParams['min_price'] ?? null;
         $priceMax = $queryParams['max_price'] ?? null;
+
         $searchText = Yii::$app->request->get('text');
+        $sort = Yii::$app->request->get('sort', 'popular');
 
         $propertyValues = $queryParams['properties'] ?? [];
 
@@ -33,6 +35,22 @@ class CatalogController extends Controller
         if ($priceMin) $query->andWhere(['>=', 'price', $priceMin]);
         if ($priceMax) $query->andWhere(['<=', 'price', $priceMax]);
         if ($searchText) $query->andWhere(['like', 'name', $searchText]);
+
+        switch ($sort) {
+            case 'price-asc':
+                $query->orderBy(['price' => SORT_ASC]);
+                break;
+            case 'price-desc':
+                $query->orderBy(['price' => SORT_DESC]);
+                break;
+            case 'newest':
+                $query->orderBy(['is_new' => SORT_DESC]);
+                break;
+            case 'popular':
+            default:
+                $query->orderBy(['is_popular' => SORT_DESC]);
+                break;
+        }
 
         if (!empty($propertyValues)) {
             foreach ($propertyValues as $i => $propertyValueId) {

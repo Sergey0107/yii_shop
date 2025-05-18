@@ -32,6 +32,8 @@ $selectedPriceMax = $request->get('max_price', $maxProductPrice);
 $selectedMaterials = $request->get('material', []);
 $selectedCountries = $request->get('country', []);
 $selectedProperties = $request->get('properties', []);
+
+$sort = $request->get('sort', 'popular');
 ?>
 
 <style>
@@ -899,11 +901,11 @@ $selectedProperties = $request->get('properties', []);
             <div class="content-header">
                 <div class="results-count">Найдено <?= count($products) ?> товаров</div>
                 <select class="sort-select" id="sortSelect">
-                    <option value="popular">По популярности</option>
-                    <option value="price-asc">По возрастанию цены</option>
-                    <option value="price-desc">По убыванию цены</option>
-                    <option value="newest">Сначала новинки</option>
-                    <option value="rating">По рейтингу</option>
+                    <option value="popular" <?= $sort === 'is_popular' ? 'selected' : '' ?>>По популярности</option>
+                    <option value="price-asc" <?= $sort === 'price-asc' ? 'selected' : '' ?>>По возрастанию цены</option>
+                    <option value="price-desc" <?= $sort === 'price-desc' ? 'selected' : '' ?>>По убыванию цены</option>
+                    <option value="newest" <?= $sort === 'is_new' ? 'selected' : '' ?>>Сначала новинки</option>
+                    <option value="rating" <?= $sort === 'rating' ? 'selected' : '' ?>>По рейтингу</option>
                 </select>
             </div>
 
@@ -1145,11 +1147,25 @@ $selectedProperties = $request->get('properties', []);
         // Сортировка
         const sortSelect = document.getElementById('sortSelect');
         if (sortSelect) {
-            sortSelect.addEventListener('change', function () {
+            sortSelect.addEventListener('change', function() {
                 const url = new URL(window.location.href);
+
+                // Удаляем параметр page (если есть) при изменении сортировки
+                url.searchParams.delete('page');
+
+                // Устанавливаем новый параметр сортировки
                 url.searchParams.set('sort', this.value);
+
+                // Перенаправляем на новый URL
                 window.location.href = url.toString();
             });
+
+            // Устанавливаем выбранное значение из URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const sortParam = urlParams.get('sort');
+            if (sortParam) {
+                sortSelect.value = sortParam;
+            }
         }
 
         // Избранное
