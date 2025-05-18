@@ -101,7 +101,6 @@ class SiteController extends Controller
         $model = new LoginForm();
         if ($model->load(Yii::$app->request->post())) {
             if ($model->login()) {
-                // Проверяем роли через RBAC
                 $user = Yii::$app->user->identity;
                 $auth = Yii::$app->authManager;
                 $userRoles = $auth->getRolesByUser($user->id);

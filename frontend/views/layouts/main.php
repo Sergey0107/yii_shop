@@ -10,7 +10,8 @@ use yii\bootstrap5\Html;
 use yii\bootstrap5\Nav;
 use yii\bootstrap5\NavBar;
 use yii\helpers\Url;
-
+$this->registerJsFile('https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js', ['position' => \yii\web\View::POS_END]);
+$this->registerCssFile('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css');
 AppAsset::register($this);
 ?>
 <?php $this->beginPage() ?>
@@ -347,7 +348,7 @@ AppAsset::register($this);
                             <path fill="url(#logo-gradient)" d="M16 0a16 16 0 1 0 16 16A16 16 0 0 0 16 0zm0 30a14 14 0 1 1 14-14 14 14 0 0 1-14 14z"/>
                             <path fill="url(#logo-gradient)" d="M22 12a2 2 0 0 0-2-2h-8a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zm-2 0l-4 4-4-4z"/>
                         </svg>
-                        <span class="fw-bold fs-4 logo-gradient-text"><?= Html::encode(Yii::$app->name) ?></span>
+                        <span class="fw-bold fs-4 logo-gradient-text"><?= Html::encode('Ковровик') ?></span>
                     </a>
 
                     <!-- Search bar -->
@@ -375,23 +376,25 @@ AppAsset::register($this);
                                 <span class="fs-xs mt-1 text-muted">Войти</span>
                             </a>
                         <?php else: ?>
+                            <?php $user = \common\models\User::findOne(Yii::$app->user->id) ?>
                             <div class="dropdown">
-                                <a href="#" class="d-flex flex-column align-items-center text-decoration-none dropdown-toggle" data-bs-toggle="dropdown">
+                                <a href="#" class="d-flex flex-column align-items-center text-decoration-none dropdown-toggle" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                                     <div class="icon-wrapper bg-primary bg-opacity-10 p-2 rounded-circle">
                                         <svg width="20" height="20" viewBox="0 0 24 24" fill="#2563eb">
                                             <path d="M12 12C14.2091 12 16 10.2091 16 8C16 5.79086 14.2091 4 12 4C9.79086 4 8 5.79086 8 8C8 10.2091 9.79086 12 12 12Z"/>
                                             <path d="M12 14C7.58172 14 4 17.5817 4 22H20C20 17.5817 16.4183 14 12 14Z"/>
                                         </svg>
                                     </div>
-                                    <span class="fs-xs mt-1 text-muted">Аккаунт</span>
+                                    <span class="fs-xs mt-1 text-muted"><?= $user->username?></span>
                                 </a>
-                                <ul class="dropdown-menu dropdown-menu-end shadow">
-                                    <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i>Профиль</a></li>
-                                    <li><a class="dropdown-item" href="#"><i class="fas fa-box me-2"></i>Заказы</a></li>
+                                <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="userDropdown">
+                                    <li><a class="dropdown-item" href="<?= Yii::$app->urlManager->createUrl(['site/index']) ?>"><i class="fas fa-box me-2"></i>Заказы</a></li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li>
-                                        <?= Html::beginForm(['/site/logout'], 'post') ?>
-                                        <?= Html::submitButton('<i class="fas fa-sign-out-alt me-2"></i>Выйти', ['class' => 'dropdown-item']) ?>
+                                        <?= Html::beginForm(['/site/logout'], 'post', ['class' => 'd-inline']) ?>
+                                        <button type="submit" class="dropdown-item">
+                                            <i class="fas fa-sign-out-alt me-2"></i>Выйти
+                                        </button>
                                         <?= Html::endForm() ?>
                                     </li>
                                 </ul>
@@ -556,7 +559,7 @@ AppAsset::register($this);
                     <a href="#" class="social-link" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
                 </div>
                 <div class="footer-legal">
-                    <p class="copyright">© <?= date('Y') ?> <?= Html::encode(Yii::$app->name) ?>. Все права защищены.</p>
+                    <p class="copyright">© <?= date('Y') ?> <?= Html::encode('Ковровик') ?>. Все права защищены.</p>
                     <div class="footer-links-horizontal">
                         <a href="#" class="footer-link">Политика конфиденциальности</a>
                         <span class="mx-2">|</span>
