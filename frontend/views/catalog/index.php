@@ -989,12 +989,24 @@ $this->title = 'Каталог';
                                 </div>
 
                                 <div class="product-actions">
-                                    <button class="btn-add-cart">
-                                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M3 3H5L5.4 5M7 13H17L21 5H5.4M7 13L5.4 5M7 13L4.70711 15.2929C4.07714 15.9229 4.52331 17 5.41421 17H17M17 17C15.8954 17 15 17.8954 15 19C15 20.1046 15.8954 21 17 21C18.1046 21 19 20.1046 19 19C19 17.8954 18.1046 17 17 17ZM9 19C9 20.1046 8.10457 21 7 21C5.89543 21 5 20.1046 5 19C5 17.8954 5.89543 17 7 17C8.10457 17 9 17.8954 9 19Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                        </svg>
-                                        В корзину
-                                    </button>
+                                    <?php if (Yii::$app->user->isGuest): ?>
+                                        <!-- Для неавторизованных пользователей - кнопка входа -->
+                                        <a href="<?= Yii::$app->urlManager->createUrl(['/site/login']) ?>" class="btn-add-cart">
+                                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M3 3H5L5.4 5M7 13H17L21 5H5.4M7 13L5.4 5M7 13L4.70711 15.2929C4.07714 15.9229 4.52331 17 5.41421 17H17M17 17C15.8954 17 15 17.8954 15 19C15 20.1046 15.8954 21 17 21C18.1046 21 19 20.1046 19 19C19 17.8954 18.1046 17 17 17ZM9 19C9 20.1046 8.10457 21 7 21C5.89543 21 5 20.1046 5 19C5 17.8954 5.89543 17 7 17C8.10457 17 9 17.8954 9 19Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                            </svg>
+                                            Войти
+                                        </a>
+                                    <?php else: ?>
+                                        <!-- Для авторизованных пользователей - кнопка добавления в корзину -->
+                                        <button class="btn-add-cart" onclick="addToCart(<?= $product->id ?>)">
+                                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M3 3H5L5.4 5M7 13H17L21 5H5.4M7 13L5.4 5M7 13L4.70711 15.2929C4.07714 15.9229 4.52331 17 5.41421 17H17M17 17C15.8954 17 15 17.8954 15 19C15 20.1046 15.8954 21 17 21C18.1046 21 19 20.1046 19 19C19 17.8954 18.1046 17 17 17ZM9 19C9 20.1046 8.10457 21 7 21C5.89543 21 5 20.1046 5 19C5 17.8954 5.89543 17 7 17C8.10457 17 9 17.8954 9 19Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                            </svg>
+                                            В корзину
+                                        </button>
+                                    <?php endif; ?>
+
                                     <button class="btn-quick-view">
                                         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                             <path d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12C23 12 19 20 12 20C5 20 1 12 1 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -1038,14 +1050,98 @@ $this->title = 'Каталог';
 </div>
 
 <script>
+    // Функция для обновления счетчика корзины
+    function updateCartCounter(count) {
+        const cartCounter = document.querySelector('.cart-counter');
+        if (cartCounter) {
+            cartCounter.textContent = count;
+            cartCounter.style.display = count > 0 ? 'flex' : 'none';
+        }
+    }
+
+    // Функция для показа уведомлений
+    function showNotification(message, type = 'success') {
+        // Создаем элемент уведомления
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.textContent = message;
+
+        // Добавляем в DOM
+        document.body.appendChild(notification);
+
+        // Автоматическое скрытие через 3 секунды
+        setTimeout(() => {
+            notification.classList.add('fade-out');
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
+    }
+
+    // Стили для уведомлений (можно добавить в CSS)
+    const style = document.createElement('style');
+    style.textContent = `
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 5px;
+            color: white;
+            z-index: 1000;
+            animation: slide-in 0.3s ease-out;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .success {
+            background-color: #4CAF50;
+        }
+        .error {
+            background-color: #F44336;
+        }
+        .fade-out {
+            animation: fade-out 0.3s ease-in forwards;
+        }
+        @keyframes slide-in {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes fade-out {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+    `;
+    document.head.appendChild(style);
+
+    function addToCart(productId) {
+        // AJAX запрос для добавления в корзину
+        $.post('/cart/add', {product_id: productId})
+            .done(function(response) {
+                if(response && response.success) {
+                    // Обновляем счетчик корзины
+                    if(response.cartCount !== undefined) {
+                        updateCartCounter(response.cartCount);
+                    }
+                    showNotification('Товар добавлен в корзину');
+                } else {
+                    const errorMsg = response && response.message ? response.message : 'Неизвестная ошибка';
+                    showNotification('Ошибка: ' + errorMsg, 'error');
+                }
+            })
+            .fail(function(xhr) {
+                let errorMsg = 'Ошибка сервера';
+                if(xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMsg = xhr.responseJSON.message;
+                }
+                showNotification(errorMsg, 'error');
+            });
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
         // Устанавливаем минимальную и максимальную цены из PHP
-        const minPrice = <?= $minProductPrice ?>;
-        const maxPrice = <?= $maxProductPrice ?>;
+        const minPrice = <?= $minProductPrice ?? 0 ?>;
+        const maxPrice = <?= $maxProductPrice ?? 10000 ?>;
 
         // Текущие значения из полей ввода или по умолчанию
-        let minVal = parseInt(document.getElementById('minPrice').value) || minPrice;
-        let maxVal = parseInt(document.getElementById('maxPrice').value) || maxPrice;
+        let minVal = parseInt(document.getElementById('minPrice')?.value) || minPrice;
+        let maxVal = parseInt(document.getElementById('maxPrice')?.value) || maxPrice;
 
         // Получаем элементы DOM
         const minPriceInput = document.getElementById('minPrice');
@@ -1055,78 +1151,111 @@ $this->title = 'Каталог';
         const priceSliderFill = document.getElementById('priceSliderFill');
         const priceSliderTrack = document.querySelector('.price-slider-track');
 
-        // Установка начальных значений
-        minPriceInput.placeholder = minPrice;
-        maxPriceInput.placeholder = maxPrice;
+        // Проверяем существование элементов перед работой с ними
+        if (minPriceInput && maxPriceInput && minPriceHandle && maxPriceHandle && priceSliderFill && priceSliderTrack) {
+            // Установка начальных значений
+            minPriceInput.placeholder = minPrice;
+            maxPriceInput.placeholder = maxPrice;
 
-        // Обновление слайдера
-        function updateSlider() {
-            const sliderWidth = priceSliderTrack.offsetWidth;
-            const minPosition = ((minVal - minPrice) / (maxPrice - minPrice)) * sliderWidth;
-            const maxPosition = ((maxVal - minPrice) / (maxPrice - minPrice)) * sliderWidth;
+            // Обновление слайдера
+            function updateSlider() {
+                const sliderWidth = priceSliderTrack.offsetWidth;
+                const minPosition = ((minVal - minPrice) / (maxPrice - minPrice)) * sliderWidth;
+                const maxPosition = ((maxVal - minPrice) / (maxPrice - minPrice)) * sliderWidth;
 
-            minPriceHandle.style.left = `${minPosition}px`;
-            maxPriceHandle.style.left = `${maxPosition}px`;
-            priceSliderFill.style.left = `${minPosition}px`;
-            priceSliderFill.style.width = `${maxPosition - minPosition}px`;
-        }
-
-        // Обновление заполнения слайдера
-        function updateSliderFill() {
-            const sliderWidth = priceSliderTrack.offsetWidth;
-            const minPosition = parseFloat(minPriceHandle.style.left || '0');
-            const maxPosition = parseFloat(maxPriceHandle.style.left || '0');
-
-            priceSliderFill.style.left = `${minPosition}px`;
-            priceSliderFill.style.width = `${maxPosition - minPosition}px`;
-        }
-
-        // Обработчики для ручек слайдера
-        function setupHandle(handle, isMin) {
-            let isDragging = false;
-
-            handle.addEventListener('mousedown', function (e) {
-                isDragging = true;
-                document.addEventListener('mousemove', onMouseMove);
-                document.addEventListener('mouseup', onMouseUp);
-            });
-
-            function onMouseMove(e) {
-                if (!isDragging) return;
-
-                const sliderRect = priceSliderTrack.getBoundingClientRect();
-                let newPosition = e.clientX - sliderRect.left;
-                const sliderWidth = sliderRect.width;
-
-                newPosition = Math.max(0, Math.min(newPosition, sliderWidth));
-
-                if (isMin) {
-                    const maxPosition = parseFloat(maxPriceHandle.style.left || '0');
-                    newPosition = Math.min(newPosition, maxPosition - 10);
-                } else {
-                    const minPosition = parseFloat(minPriceHandle.style.left || '0');
-                    newPosition = Math.max(newPosition, minPosition + 10);
-                }
-
-                handle.style.left = `${newPosition}px`;
-
-                const value = minPrice + (newPosition / sliderWidth) * (maxPrice - minPrice);
-                if (isMin) {
-                    minVal = Math.round(value);
-                    minPriceInput.value = minVal;
-                } else {
-                    maxVal = Math.round(value);
-                    maxPriceInput.value = maxVal;
-                }
-
-                updateSliderFill();
+                minPriceHandle.style.left = `${minPosition}px`;
+                maxPriceHandle.style.left = `${maxPosition}px`;
+                priceSliderFill.style.left = `${minPosition}px`;
+                priceSliderFill.style.width = `${maxPosition - minPosition}px`;
             }
 
-            function onMouseUp() {
-                isDragging = false;
-                document.removeEventListener('mousemove', onMouseMove);
-                document.removeEventListener('mouseup', onMouseUp);
+            // Обновление заполнения слайдера
+            function updateSliderFill() {
+                const sliderWidth = priceSliderTrack.offsetWidth;
+                const minPosition = parseFloat(minPriceHandle.style.left || '0');
+                const maxPosition = parseFloat(maxPriceHandle.style.left || '0');
+
+                priceSliderFill.style.left = `${minPosition}px`;
+                priceSliderFill.style.width = `${maxPosition - minPosition}px`;
             }
+
+            // Обработчики для ручек слайдера
+            function setupHandle(handle, isMin) {
+                let isDragging = false;
+
+                handle.addEventListener('mousedown', function (e) {
+                    isDragging = true;
+                    document.addEventListener('mousemove', onMouseMove);
+                    document.addEventListener('mouseup', onMouseUp);
+                });
+
+                function onMouseMove(e) {
+                    if (!isDragging) return;
+
+                    const sliderRect = priceSliderTrack.getBoundingClientRect();
+                    let newPosition = e.clientX - sliderRect.left;
+                    const sliderWidth = sliderRect.width;
+
+                    newPosition = Math.max(0, Math.min(newPosition, sliderWidth));
+
+                    if (isMin) {
+                        const maxPosition = parseFloat(maxPriceHandle.style.left || sliderWidth);
+                        newPosition = Math.min(newPosition, maxPosition - 10);
+                    } else {
+                        const minPosition = parseFloat(minPriceHandle.style.left || 0);
+                        newPosition = Math.max(newPosition, minPosition + 10);
+                    }
+
+                    handle.style.left = `${newPosition}px`;
+
+                    const value = minPrice + (newPosition / sliderWidth) * (maxPrice - minPrice);
+                    if (isMin) {
+                        minVal = Math.round(value);
+                        if (minPriceInput) minPriceInput.value = minVal;
+                    } else {
+                        maxVal = Math.round(value);
+                        if (maxPriceInput) maxPriceInput.value = maxVal;
+                    }
+
+                    updateSliderFill();
+                }
+
+                function onMouseUp() {
+                    isDragging = false;
+                    document.removeEventListener('mousemove', onMouseMove);
+                    document.removeEventListener('mouseup', onMouseUp);
+                }
+            }
+
+            // Обработчики для полей ввода
+            if (minPriceInput) {
+                minPriceInput.addEventListener('input', function () {
+                    minVal = parseInt(this.value) || minPrice;
+                    if (minVal > maxVal) {
+                        minVal = maxVal;
+                        this.value = minVal;
+                    }
+                    updateSlider();
+                });
+            }
+
+            if (maxPriceInput) {
+                maxPriceInput.addEventListener('input', function () {
+                    maxVal = parseInt(this.value) || maxPrice;
+                    if (maxVal < minVal) {
+                        maxVal = minVal;
+                        this.value = maxVal;
+                    }
+                    updateSlider();
+                });
+            }
+
+            // Настройка обработчиков слайдера
+            setupHandle(minPriceHandle, true);
+            setupHandle(maxPriceHandle, false);
+
+            // Инициализация слайдера
+            updateSlider();
         }
 
         // Мобильные фильтры
@@ -1183,34 +1312,22 @@ $this->title = 'Каталог';
         wishlistButtons.forEach(button => {
             button.addEventListener('click', function (e) {
                 e.preventDefault();
-                this.classList.toggle('active');
+                const productId = this.dataset.productId;
+                const isActive = this.classList.contains('active');
+
+                $.post('/wishlist/toggle', {id: productId})
+                    .done(function(response) {
+                        if(response.success) {
+                            this.classList.toggle('active');
+                            showNotification(isActive ? 'Удалено из избранного' : 'Добавлено в избранное');
+                        } else {
+                            showNotification(response.message || 'Ошибка', 'error');
+                        }
+                    }.bind(this))
+                    .fail(function() {
+                        showNotification('Ошибка сервера', 'error');
+                    });
             });
         });
-
-        // Обработчики для полей ввода
-        minPriceInput.addEventListener('input', function () {
-            minVal = parseInt(this.value) || minPrice;
-            if (minVal > maxVal) {
-                minVal = maxVal;
-                this.value = minVal;
-            }
-            updateSlider();
-        });
-
-        maxPriceInput.addEventListener('input', function () {
-            maxVal = parseInt(this.value) || maxPrice;
-            if (maxVal < minVal) {
-                maxVal = minVal;
-                this.value = maxVal;
-            }
-            updateSlider();
-        });
-
-        // Настройка обработчиков слайдера
-        setupHandle(minPriceHandle, true);
-        setupHandle(maxPriceHandle, false);
-
-        // Инициализация слайдера
-        updateSlider();
     });
 </script>

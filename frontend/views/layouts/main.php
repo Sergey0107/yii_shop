@@ -3,6 +3,9 @@
 /** @var \yii\web\View $this */
 /** @var string $content */
 
+use backend\models\Order;
+use backend\models\OrderProducts;
+use common\models\User;
 use common\widgets\Alert;
 use frontend\assets\AppAsset;
 use yii\bootstrap5\Breadcrumbs;
@@ -417,7 +420,19 @@ AppAsset::register($this);
                                     <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
                                 </svg>
                             </div>
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.5rem; padding: 0.25rem 0.35rem;">5</span>
+                            <?php
+                                $cartCount = 0;
+                                if (Yii::$app->user->identity) {
+                                    $user = User::findOne(Yii::$app->user->id);
+                                    $order = Order::findOne(['user_id' => Yii::$app->user->id]);
+                                    if ($order) {
+                                        $cartCount = OrderProducts::find()->where(['order_id' => $order->id])->count();
+                                    }
+                                }
+
+                            ?>
+
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.5rem; padding: 0.25rem 0.35rem;"><?= $cartCount ?? ''?></span>
                             <span class="fs-xs mt-1 text-muted">Корзина</span>
                         </a>
                     </div>
@@ -446,12 +461,12 @@ AppAsset::register($this);
                         </li>
                         <li class="nav-item">
                             <a class="nav-link px-3 py-2 rounded-pill d-flex align-items-center" href="<?= Yii::$app->urlManager->createUrl(['catalog/sale']) ?>">
-                                <i class="fas fa-percentage me-2"></i> Акции
+                                <i class="fas fa-percentage me-2"></i> Хиты
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link px-3 py-2 rounded-pill d-flex align-items-center" href="<?= Yii::$app->urlManager->createUrl(['catalog/brands']) ?>">
-                                <i class="fas fa-copyright me-2"></i> Бренды
+                                <i class="fas fa-copyright me-2"></i> Статьи
                             </a>
                         </li>
                         <li class="nav-item">
