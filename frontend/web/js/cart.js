@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function initMap() {
         const map = new ymaps.Map('pickupMap', {
-            center: [57.77, 40.97], // Москва по умолчанию
+            center: [57.77, 40.97],
             zoom: 10
         });
 
@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                     // Если товары остались - обновляем итоги
                                     updateOrderSummary(data.order);
                                 }
-                            }, 300);
+                            }, 1);
                         } else {
                             alert('Ошибка при удалении товара');
                         }
@@ -140,10 +140,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const totalItems = orderData.products_count || 0;
         const totalPrice = orderData.total_price || 0;
 
-        // 1. Обновление бейджа корзины
         updateCartBadge(totalItems);
 
-        // 2. Обновление сводки заказа
         updateOrderSummaryElements(totalItems, totalPrice);
     }
 
@@ -155,10 +153,8 @@ document.addEventListener('DOMContentLoaded', function() {
             badge.textContent = count;
             badge.style.display = count > 0 ? '' : 'none';
 
-            // Альтернативный вариант с data-атрибутом
             badge.dataset.count = count;
 
-            // Анимация
             badge.classList.add('badge-pulse');
             setTimeout(() => badge.classList.remove('badge-pulse'), 300);
         });
@@ -176,7 +172,6 @@ document.addEventListener('DOMContentLoaded', function() {
             el.textContent = `${formattedPrice} ₽`;
         });
 
-        // Анимация итоговой строки
         document.querySelectorAll('.summary-row.total').forEach(row => {
             row.classList.add('summary-updated');
             setTimeout(() => row.classList.remove('summary-updated'), 500);
