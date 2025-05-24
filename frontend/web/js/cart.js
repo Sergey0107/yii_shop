@@ -146,7 +146,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function updateCartBadge(count) {
-        const badges = document.querySelectorAll('.position-absolute.badge.bg-danger');
+        const badges = document.querySelectorAll('.position-absolute.badge.bg-danger.cart-counter');
 
         badges.forEach(badge => {
             // Обновляем текст и видимость

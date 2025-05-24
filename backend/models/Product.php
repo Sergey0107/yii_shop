@@ -191,4 +191,19 @@ class Product extends \yii\db\ActiveRecord
             ->via('productProperties');
     }
 
+    public function inUserOrder(): bool
+    {
+       $userId = Yii::$app->user->id;
+       $order = Order::findOne(['user_id' => $userId, 'status' => Order::STATUS_DRAFT]);
+       if (!$order) {
+           return false;
+       }
+       $orderProduct = OrderProducts::findOne(['order_id' => $order->id, 'product_id' => $this->id]);
+       if (!$orderProduct) {
+           return false;
+       }
+
+       return true;
+    }
+
 }

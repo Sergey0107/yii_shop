@@ -425,14 +425,12 @@ AppAsset::register($this);
                                 if (Yii::$app->user->identity) {
                                     $user = User::findOne(Yii::$app->user->id);
                                     $order = Order::findOne(['user_id' => Yii::$app->user->id, 'status' => Order::STATUS_DRAFT]);
-                                    if ($order) {
-                                        $cartCount = OrderProducts::find()->where(['order_id' => $order->id])->count();
-                                    }
+                                    $cartCount = $order->getCountProducts();
                                 }
 
                             ?>
 
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger cart-counter" style="font-size: 0.5rem; padding: 0.25rem 0.35rem;"><?= $cartCount ?? ''?></span>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger cart-counter" style="font-size: 0.5rem; padding: 0.25rem 0.35rem;"><?= $cartCount > 0 ? $cartCount : ''?></span>
                             <span class="fs-xs mt-1 text-muted">Корзина</span>
                         </a>
                     </div>

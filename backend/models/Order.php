@@ -141,8 +141,8 @@ class Order extends \yii\db\ActiveRecord
         $this->total_price = $total;
     }
 
-    public function getCountProducts()
+    public function getCountProducts(): int
     {
-        return $this->getOrderProducts()->count();
+        return (int)$this->getOrderProducts()->sum('quantity');
     }
 }

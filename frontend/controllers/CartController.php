@@ -120,10 +120,15 @@ class CartController extends Controller
             }
         }
 
-        $orderProduct = new OrderProducts();
-        $orderProduct->order_id = $order->id;
-        $orderProduct->product_id = $productId;
-        $orderProduct->quantity = 1;
+        if ($product->inUserOrder()) {
+            $orderProduct = OrderProducts::findOne(['order_id' => $order->id, 'product_id' => $product->id]);
+            $orderProduct->quantity += 1;
+        } else {
+            $orderProduct = new OrderProducts();
+            $orderProduct->order_id = $order->id;
+            $orderProduct->product_id = $productId;
+            $orderProduct->quantity = 1;
+        }
 
         if (!$orderProduct->save()) {
             return ['success' => false, 'errors' => $orderProduct->getErrors()];
