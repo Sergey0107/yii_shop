@@ -1,10 +1,19 @@
 // Функция для обновления счетчика корзины
 function updateCartCounter(count) {
-    const cartCounter = document.querySelector('.cart-counter');
-    if (cartCounter) {
-        cartCounter.textContent = count;
-        cartCounter.style.display = count > 0 ? 'flex' : 'none';
-    }
+    const badges = document.querySelectorAll('.position-absolute.badge.bg-danger.cart-counter');
+
+    badges.forEach(badge => {
+        // Обновляем текст и видимость
+        badge.textContent = count;
+        badge.style.display = count > 0 ? '' : 'none';
+
+        // Альтернативный вариант с data-атрибутом
+        badge.dataset.count = count;
+
+        // Анимация
+        badge.classList.add('badge-pulse');
+        setTimeout(() => badge.classList.remove('badge-pulse'), 300);
+    });
 }
 
 // Функция для показа уведомлений
@@ -59,13 +68,11 @@ style.textContent = `
 document.head.appendChild(style);
 
 function addToCart(productId) {
-    // AJAX запрос для добавления в корзину
     $.post('/cart/add', {product_id: productId})
         .done(function(response) {
             if(response && response.success) {
-                // Обновляем счетчик корзины
-                if(response.cartCount !== undefined) {
-                    updateCartCounter(response.cartCount);
+                if(response.count !== undefined) {
+                    updateCartCounter(response.count);
                 }
                 showNotification('Товар добавлен в корзину');
             } else {

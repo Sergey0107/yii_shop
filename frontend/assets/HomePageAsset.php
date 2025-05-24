@@ -13,6 +13,10 @@ class HomePageAsset extends AssetBundle
         'css/home-page.css',
     ];
 
+    public $js = [
+        'js/catalog.js',
+    ];
+
     public $depends = [
         'yii\web\YiiAsset',
         'yii\bootstrap5\BootstrapAsset',

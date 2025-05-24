@@ -410,7 +410,7 @@ AppAsset::register($this);
                                     <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
                                 </svg>
                             </div>
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.5rem; padding: 0.25rem 0.35rem;">3</span>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.5rem; padding: 0.25rem 0.35rem;">0</span>
                             <span class="fs-xs mt-1 text-muted">Избранное</span>
                         </a>
 
@@ -424,7 +424,7 @@ AppAsset::register($this);
                                 $cartCount = 0;
                                 if (Yii::$app->user->identity) {
                                     $user = User::findOne(Yii::$app->user->id);
-                                    $order = Order::findOne(['user_id' => Yii::$app->user->id]);
+                                    $order = Order::findOne(['user_id' => Yii::$app->user->id, 'status' => Order::STATUS_DRAFT]);
                                     if ($order) {
                                         $cartCount = OrderProducts::find()->where(['order_id' => $order->id])->count();
                                     }
@@ -432,7 +432,7 @@ AppAsset::register($this);
 
                             ?>
 
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.5rem; padding: 0.25rem 0.35rem;"><?= $cartCount ?? ''?></span>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger cart-counter" style="font-size: 0.5rem; padding: 0.25rem 0.35rem;"><?= $cartCount ?? ''?></span>
                             <span class="fs-xs mt-1 text-muted">Корзина</span>
                         </a>
                     </div>

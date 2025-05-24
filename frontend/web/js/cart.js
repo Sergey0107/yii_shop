@@ -134,32 +134,53 @@ document.addEventListener('DOMContentLoaded', function() {
         this.value = !x[2] ? x[1] : '+' + x[1] + ' (' + x[2] + (x[3] ? ') ' + x[3] + (x[4] ? '-' + x[4] : '') + (x[5] ? '-' + x[5] : '') : '');
     });
 
-    /**
-     * Обновляет блок с итоговой информацией о заказе
-     * @param {Object} orderData - Данные заказа с сервера
-     */
     function updateOrderSummary(orderData) {
-        // Обновляем количество товаров
-        const productCountElement = document.querySelector('.summary-row:first-child span:first-child');
-        if (productCountElement) {
-            productCountElement.textContent = `Товары (${orderData.products_count || 0})`;
-        }
+        if (!orderData) return;
 
-        // Обновляем общую стоимость
-        const totalPriceElements = document.querySelectorAll('.summary-row span:last-child');
-        if (totalPriceElements.length > 0) {
-            totalPriceElements.forEach(el => {
-                el.textContent = `${orderData.total_price || 0} ₽`;
-            });
-        }
+        const totalItems = orderData.products_count || 0;
+        const totalPrice = orderData.total_price || 0;
 
-        // Если это итоговая строка, добавляем класс для анимации
-        const totalRow = document.querySelector('.summary-row.total');
-        if (totalRow) {
-            totalRow.classList.add('updated');
-            setTimeout(() => {
-                totalRow.classList.remove('updated');
-            }, 500);
-        }
+        // 1. Обновление бейджа корзины
+        updateCartBadge(totalItems);
+
+        // 2. Обновление сводки заказа
+        updateOrderSummaryElements(totalItems, totalPrice);
     }
+
+    function updateCartBadge(count) {
+        const badges = document.querySelectorAll('.position-absolute.badge.bg-danger');
+
+        badges.forEach(badge => {
+            // Обновляем текст и видимость
+            badge.textContent = count;
+            badge.style.display = count > 0 ? '' : 'none';
+
+            // Альтернативный вариант с data-атрибутом
+            badge.dataset.count = count;
+
+            // Анимация
+            badge.classList.add('badge-pulse');
+            setTimeout(() => badge.classList.remove('badge-pulse'), 300);
+        });
+    }
+
+    function updateOrderSummaryElements(itemsCount, totalPrice) {
+        // Обновление количества товаров
+        document.querySelectorAll('.summary-row:first-child span:first-child').forEach(el => {
+            el.textContent = `Товары (${itemsCount})`;
+        });
+
+        // Обновление цены
+        const formattedPrice = new Intl.NumberFormat('ru-RU').format(totalPrice);
+        document.querySelectorAll('.summary-row span:last-child').forEach(el => {
+            el.textContent = `${formattedPrice} ₽`;
+        });
+
+        // Анимация итоговой строки
+        document.querySelectorAll('.summary-row.total').forEach(row => {
+            row.classList.add('summary-updated');
+            setTimeout(() => row.classList.remove('summary-updated'), 500);
+        });
+    }
+
 });

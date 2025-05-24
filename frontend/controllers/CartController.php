@@ -129,7 +129,8 @@ class CartController extends Controller
             return ['success' => false, 'errors' => $orderProduct->getErrors()];
         }
 
-        return ['success' => true];
+        $count = $order->getCountProducts();
+        return ['success' => true, 'count' => $count];
     }
 
     /**
@@ -149,7 +150,23 @@ class CartController extends Controller
         if (!$orderProduct->delete()) {
             return ['success' => false, 'errors' => $orderProduct->getErrors()];
         }
-        return ['success' => true, 'message' => 'Товар успешно удален из корзины'];
+
+        $order = Order::findOne(['user_id' => Yii::$app->user->id, 'status' => Order::STATUS_DRAFT]);
+        if ($order) {
+            $count = $order->getCountProducts();
+            $orderData = [
+                'total_price' => $order->total_price,
+                'products_count' => $count,
+            ];
+        } else {
+            $orderData = [
+                'total_price' => 0,
+                'products_count' => 0,
+            ];
+        }
+
+
+        return ['success' => true, 'message' => 'Товар успешно удален из корзины', 'order' => $orderData];
     }
 
     /**
@@ -170,7 +187,7 @@ class CartController extends Controller
             $deletedRows = OrderProducts::deleteAll(['order_id' => $order->id]);
             if ($order->delete()) {
                 $transaction->commit();
-                return ['success' => true];
+                return ['success' => true, 'order' => $order];
             }
 
             $transaction->rollBack();

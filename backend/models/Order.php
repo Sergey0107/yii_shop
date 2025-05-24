@@ -140,4 +140,9 @@ class Order extends \yii\db\ActiveRecord
 
         $this->total_price = $total;
     }
+
+    public function getCountProducts()
+    {
+        return $this->getOrderProducts()->count();
+    }
 }
