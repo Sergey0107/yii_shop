@@ -24,9 +24,11 @@
 use backend\models\Color;
 use backend\models\Country;
 use backend\models\Material;
+use backend\models\Product;
 use backend\models\Size;
 use backend\models\Type;
 use backend\models\Property;
+use yii\data\Pagination;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
 use yii\helpers\Url;

@@ -38,7 +38,8 @@ $this->title = 'Корзина';
 
                                 <div class="product-actions">
                                     <div class="product-total"><?= Yii::$app->formatter->asDecimal($orderProduct->product->price * $orderProduct->quantity) ?> ₽</div>
-                                    <button class="product-remove" data-product-id="<?= $orderProduct->id ?>">
+                                    <meta name="csrf-token" content="<?= Yii::$app->request->csrfToken ?>">
+                                    <button class="product-remove" data-product-id="<?= $orderProduct->product_id ?>">
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                             <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                                         </svg>
@@ -109,6 +110,7 @@ $this->title = 'Корзина';
                 </div>
 
                 <div class="form-actions">
+                    <meta name="csrf-token" content="<?= Yii::$app->request->csrfToken ?>">
                     <button class="btn-checkout" id="submitOrder">
                         Оформить заказ
                     </button>
@@ -611,12 +613,12 @@ $this->title = 'Корзина';
             button.addEventListener('click', function() {
                 const productId = this.dataset.productId;
                 const productCard = this.closest('.product-card');
-
                 if (confirm('Удалить товар из корзины?')) {
-                    fetch('/cart/delete?id=' + productId, {
+                    fetch('/cart/delete?product_id=' + productId, {
                         method: 'POST',
                         headers: {
-                            'X-Requested-With': 'XMLHttpRequest'
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
                         }
                     })
                         .then(response => response.json())
@@ -645,7 +647,8 @@ $this->title = 'Корзина';
                 fetch('/cart/clear', {
                     method: 'POST',
                     headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
                     }
                 })
                     .then(response => response.json())
@@ -690,7 +693,8 @@ $this->title = 'Корзина';
                 method: 'POST',
                 body: formData,
                 headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
                 }
             })
                 .then(response => response.json())

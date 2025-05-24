@@ -6,16 +6,19 @@
 
 use backend\models\Product;
 use backend\models\Type;
+use frontend\assets\BackendAsset;
+use frontend\assets\HomePageAsset;
+use yii\bootstrap5\BootstrapAsset;
+use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
 use yii\helpers\Url;
-use yii\helpers\ArrayHelper;
-use frontend\assets\BackendAsset;
+
 
 $backendUploads = BackendAsset::register($this);
+HomePageAsset::register($this);
 
 $this->title = 'Главная страница';
 
-// Fetch categories from the Type model
 $types = Type::find()->select(['id', 'name'])->asArray()->all();
 
 ?>
@@ -35,13 +38,10 @@ $types = Type::find()->select(['id', 'name'])->asArray()->all();
                         <img src="<?= Yii::getAlias('@web') ?>/uploads/banner3.jpeg" alt="Баннер 3">
                     </div>
                 </div>
-                <!-- Навигация -->
                 <div class="swiper-button-next"></div>
                 <div class="swiper-button-prev"></div>
-                <!-- Пагинация -->
                 <div class="swiper-pagination"></div>
             </div>
-            <!-- Decorative SVG Elements -->
             <svg class="banner-decor-left" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
                 <path d="M100,10 A90,90 0 0,1 190,100 A90,90 0 0,1 100,190 A90,90 0 0,1 10,100 A90,90 0 0,1 100,10 Z" fill="none" stroke="var(--primary)" stroke-width="2" opacity="0.2"/>
                 <circle cx="100" cy="100" r="20" fill="var(--primary)" opacity="0.3"/>
@@ -276,440 +276,12 @@ $types = Type::find()->select(['id', 'name'])->asArray()->all();
     </section>
 </div>
 
-<!-- Подключение Swiper.js -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 
-<style>
-    /* === Глобальные переменные и базовые стили === */
-    :root {
-        --primary: #2563eb;
-        --primary-hover: #1d4ed8;
-        --primary-light: #dbeafe;
-        --secondary: #f3f4f6;
-        --dark: #1f2937;
-        --light: #f9fafb;
-        --gray: #6b7280;
-        --gray-light: #e5e7eb;
-        --success: #10b981;
-        --danger: #ef4444;
-        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-        --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        --radius-sm: 0.25rem;
-        --radius: 0.5rem;
-        --radius-lg: 0.75rem;
-        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
 
-    .site-index {
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-        background-color: var(--light);
-        color: var(--dark);
-        line-height: 1.6;
-        -webkit-font-smoothing: antialiased;
-        min-height: 100vh;
-    }
-
-    .container {
-        width: 100%;
-        max-width: 1200px;
-        padding: 0 2rem;
-        margin: 0 auto;
-        position: relative;
-    }
-
-    /* Стили для баннера */
-    .hero-banner {
-        margin-bottom: 40px;
-        overflow: hidden;
-        position: relative;
-    }
-
-    .swiper-container {
-        width: 100%;
-        height: 400px;
-    }
-
-    .swiper-slide img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    .swiper-button-next,
-    .swiper-button-prev {
-        color: #fff;
-        background-color: rgba(0, 0, 0, 0.5);
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        transition: background-color 0.3s ease;
-    }
-
-    .swiper-button-next:hover,
-    .swiper-button-prev:hover {
-        background-color: rgba(0, 0, 0, 0.8);
-    }
-
-    .swiper-pagination-bullet {
-        background-color: #fff;
-        opacity: 0.6;
-        transition: opacity 0.3s ease;
-    }
-
-    .swiper-pagination-bullet-active {
-        opacity: 1;
-    }
-
-    .banner-decor-left,
-    .banner-decor-right {
-        position: absolute;
-        width: 150px;
-        height: 150px;
-        opacity: 0.5;
-    }
-
-    .banner-decor-left {
-        top: 20px;
-        left: 20px;
-    }
-
-    .banner-decor-right {
-        bottom: 20px;
-        right: 20px;
-    }
-
-    /* Стили для секций */
-    .popular-products,
-    .new-arrivals {
-        padding: 80px 0;
-        background-color: white;
-        position: relative;
-    }
-
-    .new-arrivals {
-        background-color: var(--secondary);
-    }
-
-    .section-header {
-        text-align: center;
-        margin-bottom: 60px;
-    }
-
-    .section-title {
-        font-size: 2rem;
-        font-weight: 700;
-        color: var(--dark);
-        margin-bottom: 1.5rem;
-        position: relative;
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .section-title:after {
-        content: '';
-        position: absolute;
-        bottom: -10px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 50px;
-        height: 3px;
-        background-color: var(--primary);
-    }
-
-    .title-icon {
-        width: 24px;
-        height: 24px;
-    }
-
-    .product-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
-        gap: 1rem;
-    }
-
-    .product-card {
-        background-color: white;
-        border-radius: var(--radius-lg);
-        overflow: hidden;
-        box-shadow: var(--shadow);
-        width: 100%;
-        height: auto;
-        padding: 0.25rem;
-        position: relative;
-        display: flex;
-        flex-direction: column;
-        transition: var(--transition);
-    }
-
-    .product-card:hover {
-        transform: translateY(-0.5rem);
-        box-shadow: var(--shadow-md);
-    }
-
-    .product-badge {
-        position: absolute;
-        top: 1rem;
-        left: 1rem;
-        background-color: var(--success);
-        color: white;
-        font-size: 0.75rem;
-        font-weight: 600;
-        padding: 0.25rem 0.5rem;
-        border-radius: var(--radius-sm);
-        z-index: 1;
-    }
-
-    .product-wishlist {
-        position: absolute;
-        top: 1rem;
-        right: 1rem;
-        background-color: white;
-        width: 2rem;
-        height: 2rem;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: var(--transition);
-        z-index: 1;
-    }
-
-    .product-wishlist:hover {
-        color: var(--danger);
-    }
-
-    .product-wishlist.active {
-        color: var(--danger);
-    }
-
-    .product-image {
-        position: relative;
-        padding-top: 60%;
-        overflow: hidden;
-    }
-
-    .product-image img {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: var(--transition);
-    }
-
-    .product-card:hover .product-image img {
-        transform: scale(1.05);
-    }
-
-    .product-info {
-        padding: 0.5rem;
-        flex-grow: 1;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .product-category {
-        color: var(--primary);
-        font-size: 0.875rem;
-        font-weight: 500;
-        margin-bottom: 0.5rem;
-    }
-
-    .product-title {
-        font-weight: 600;
-        margin-bottom: 0.75rem;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-    }
-
-    .product-rating {
-        display: flex;
-        align-items: center;
-        gap: 0.25rem;
-        margin-bottom: 0.75rem;
-    }
-
-    .stars {
-        color: #f59e0b;
-    }
-
-    .rating-count {
-        color: var(--gray);
-        font-size: 0.875rem;
-    }
-
-    .product-price {
-        margin-top: auto;
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-    }
-
-    .current-price {
-        font-size: 1.25rem;
-        font-weight: 700;
-    }
-
-    .old-price {
-        font-size: 1rem;
-        color: var(--gray);
-        text-decoration: line-through;
-    }
-
-    .discount {
-        color: var(--success);
-        font-weight: 600;
-        font-size: 0.875rem;
-    }
-
-    .product-actions {
-        display: flex;
-        gap: 0.75rem;
-        margin-top: 1rem;
-    }
-
-    .btn-add-cart {
-        flex: 1;
-        padding: 0.75rem;
-        background-color: var(--primary);
-        color: white;
-        border: none;
-        border-radius: var(--radius);
-        font-weight: 500;
-        cursor: pointer;
-        transition: var(--transition);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.5rem;
-    }
-
-    .btn-add-cart:hover {
-        background-color: var(--primary-hover);
-    }
-
-    .btn-add-cart svg {
-        width: 1.25rem;
-        height: 1.25rem;
-    }
-
-    .btn-quick-view {
-        width: 2.75rem;
-        height: 2.75rem;
-        background-color: var(--secondary);
-        border: none;
-        border-radius: var(--radius);
-        cursor: pointer;
-        transition: var(--transition);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .btn-quick-view:hover {
-        background-color: var(--gray-light);
-    }
-
-    .btn-quick-view svg {
-        width: 1.25rem;
-        height: 1.25rem;
-    }
-
-    .no-results {
-        grid-column: 1 / -1;
-        text-align: center;
-        padding: 4rem;
-    }
-
-    .no-results svg {
-        margin-bottom: 1rem;
-    }
-
-    .no-results h3 {
-        font-size: 1.5rem;
-        margin-bottom: 0.5rem;
-        color: var(--dark);
-    }
-
-    .no-results p {
-        color: var(--gray);
-        max-width: 32rem;
-        margin: 0 auto;
-    }
-
-    .decorative-elements {
-        display: flex;
-        align-items: center;
-        gap: 20px;
-        margin-top: 30px;
-    }
-
-    .decorative-line {
-        height: 2px;
-        background-color: var(--primary-light);
-        flex-grow: 1;
-    }
-
-    .decorative-icon {
-        flex-shrink: 0;
-    }
-
-    /* Адаптивность */
-    @media (max-width: 768px) {
-        .product-grid {
-            grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
-        }
-
-        .swiper-container {
-            height: 300px;
-        }
-
-        .section-title {
-            font-size: 1.5rem;
-        }
-
-        .banner-decor-left,
-        .banner-decor-right {
-            width: 100px;
-            height: 100px;
-        }
-    }
-
-    @media (max-width: 480px) {
-        .product-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .swiper-container {
-            height: 200px;
-        }
-
-        .banner-decor-left,
-        .banner-decor-right {
-            width: 80px;
-            height: 80px;
-        }
-    }
-
-    @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
-    }
-
-    .fade-in {
-        animation: fadeIn 0.5s ease forwards;
-    }
-</style>
 
 <script>
-    // Инициализация Swiper.js
     document.addEventListener('DOMContentLoaded', function () {
         const swiper = new Swiper('.swiper-container', {
             loop: true,
@@ -727,7 +299,6 @@ $types = Type::find()->select(['id', 'name'])->asArray()->all();
             },
         });
 
-        // Избранное
         const wishlistButtons = document.querySelectorAll('.product-wishlist');
         wishlistButtons.forEach(button => {
             button.addEventListener('click', function (e) {

@@ -7,6 +7,7 @@ use backend\models\Order;
 use backend\models\Product;
 use backend\models\OrderProducts;
 use Yii;
+use yii\db\StaleObjectException;
 use yii\web\Controller;
 use yii\web\Response;
 
@@ -98,6 +99,12 @@ class CartController extends Controller
     public function actionAdd()
     {
         Yii::$app->response->format = Response::FORMAT_JSON;
+        $productId = (int)Yii::$app->request->post('product_id');
+        $product = Product::findOne($productId);
+
+        if (!$product) {
+            throw new \Exception('Товар не найден');
+        }
 
         $order = Order::findOne(['user_id' => Yii::$app->user->id, 'status' => Order::STATUS_DRAFT]);
 
@@ -105,7 +112,8 @@ class CartController extends Controller
             $order = new Order();
             $order->user_id = Yii::$app->user->id;
             $order->status = Order::STATUS_DRAFT;
-            $order->created_at = time();
+            $order->created_at = date('Y-m-d H:i:s', time());
+            $order->total_price = $product->price;
 
             if (!$order->save()) {
                 return ['success' => false, 'errors' => $order->getErrors()];
@@ -114,7 +122,7 @@ class CartController extends Controller
 
         $orderProduct = new OrderProducts();
         $orderProduct->order_id = $order->id;
-        $orderProduct->product_id = Yii::$app->request->post('product_id');
+        $orderProduct->product_id = $productId;
 
         if (!$orderProduct->save()) {
             return ['success' => false, 'errors' => $orderProduct->getErrors()];
@@ -123,6 +131,10 @@ class CartController extends Controller
         return ['success' => true];
     }
 
+    /**
+     * @throws \Throwable
+     * @throws StaleObjectException
+     */
     public function actionDelete()
     {
         Yii::$app->response->format = Response::FORMAT_JSON;
@@ -134,14 +146,14 @@ class CartController extends Controller
 
         $orderProduct = OrderProducts::findOne([
             'order_id' => $order->id,
-            'product_id' => Yii::$app->request->post('product_id'),
+            'product_id' => Yii::$app->request->get('product_id'),
         ]);
         if (!$orderProduct) {
             return ['success' => false, 'message' => 'Товар не найден в заказе'];
         }
 
         if ($orderProduct->delete()) {
-            $order->updateTotalPrice(); // Пересчет общей суммы заказа при необходимости
+            $order->updateTotalPrice();
             return ['success' => true];
         }
 
