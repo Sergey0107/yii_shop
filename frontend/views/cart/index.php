@@ -35,7 +35,6 @@ $this->title = 'Корзина';
                                 <div class="product-details">
                                     <h3 class="product-title"><?= Html::encode($orderProduct->product->name) ?></h3>
                                     <div class="product-price"><?= Yii::$app->formatter->asDecimal($orderProduct->product->price) ?> ₽</div>
-                                    <div class="product-quantity">Количество: <?= $orderProduct->quantity ?> шт.</div>
                                 </div>
 
                                 <div class="product-actions">
