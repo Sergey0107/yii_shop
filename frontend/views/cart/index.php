@@ -40,8 +40,12 @@ $this->title = 'Корзина';
                                     <div class="product-details">
                                         <h3 class="product-title"><?= Html::encode($orderProduct->product->name) ?></h3>
                                         <div class="product-meta">
-                                            <span class="product-price"><?= Yii::$app->formatter->asDecimal($orderProduct->product->price) ?> ₽</span>
-                                            <span class="product-quantity">× <?= $orderProduct->quantity ?> шт.</span>
+                                           <span class="product-price" data-price="<?= $orderProduct->product->price ?>"><?= Yii::$app->formatter->asDecimal($orderProduct->product->price) ?> ₽ </span>
+                                            <div class="quantity-controls">
+                                                <button class="quantity-btn minus" data-order-product-id="<?= $orderProduct->id ?>">-</button>
+                                                <span class="product-quantity"><?= $orderProduct->quantity ?></span>
+                                                <button class="quantity-btn plus" data-order-product-id="<?= $orderProduct->id ?>">+</button>
+                                            </div>
                                         </div>
                                         <div class="product-total"><?= Yii::$app->formatter->asDecimal($orderProduct->product->price * $orderProduct->quantity) ?> ₽</div>
                                     </div>

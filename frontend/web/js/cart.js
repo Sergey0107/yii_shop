@@ -179,3 +179,109 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
 });
+
+// Обработчики для кнопок +/-
+document.querySelectorAll('.quantity-btn').forEach(button => {
+    button.addEventListener('click', function() {
+        const orderProductId = this.dataset.orderProductId;
+        const isPlus = this.classList.contains('plus');
+        const action = isPlus ? 'plus' : 'minus';
+
+        updateQuantity(orderProductId, action);
+    });
+});
+
+function updateQuantity(orderProductId, action) {
+    const url = `/cart/${action}?id=${orderProductId}`;
+    const quantityElement = document.querySelector(`.quantity-btn[data-order-product-id="${orderProductId}"]`)
+        .closest('.quantity-controls')
+        .querySelector('.product-quantity');
+
+    // Блокируем кнопки на время запроса
+    const buttons = document.querySelectorAll(`.quantity-btn[data-order-product-id="${orderProductId}"]`);
+    buttons.forEach(btn => btn.disabled = true);
+
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+        }
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Обновляем количество
+                quantityElement.textContent = data.quantity;
+
+                // Обновляем общую сумму товара (исправленная версия)
+                const productCard = quantityElement.closest('.product-card');
+                if (productCard) {
+                    const priceText = productCard.querySelector('.product-price').textContent;
+                    const price = parseFloat(productCard.querySelector('.product-price').dataset.price);
+
+                    productCard.querySelector('.product-total').textContent =
+                        (price * data.quantity).toLocaleString('ru-RU', {
+                            minimumFractionDigits: 0,
+                            maximumFractionDigits: 0
+                        }) + ' ₽';
+                }
+
+                // Обновляем сводку
+                updateOrderSummary(data.order);
+            } else {
+                alert(data.message || 'Ошибка при изменении количества');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Ошибка соединения');
+        })
+        .finally(() => {
+            buttons.forEach(btn => btn.disabled = false);
+        });
+}
+
+function updateOrderSummary(orderData) {
+    if (!orderData) return;
+
+    const totalItems = orderData.products_count || 0;
+    const totalPrice = orderData.total_price || 0;
+
+    updateCartBadge(totalItems);
+
+    updateOrderSummaryElements(totalItems, totalPrice);
+}
+
+function updateCartBadge(count) {
+    const badges = document.querySelectorAll('.position-absolute.badge.bg-danger.cart-counter');
+
+    badges.forEach(badge => {
+        // Обновляем текст и видимость
+        badge.textContent = count;
+        badge.style.display = count > 0 ? '' : 'none';
+
+        badge.dataset.count = count;
+
+        badge.classList.add('badge-pulse');
+        setTimeout(() => badge.classList.remove('badge-pulse'), 300);
+    });
+}
+
+function updateOrderSummaryElements(itemsCount, totalPrice) {
+    // Обновление количества товаров
+    document.querySelectorAll('.summary-row:first-child span:first-child').forEach(el => {
+        el.textContent = `Товары (${itemsCount})`;
+    });
+
+    // Обновление цены
+    const formattedPrice = new Intl.NumberFormat('ru-RU').format(totalPrice);
+    document.querySelectorAll('.summary-row span:last-child').forEach(el => {
+        el.textContent = `${formattedPrice} ₽`;
+    });
+
+    document.querySelectorAll('.summary-row.total').forEach(row => {
+        row.classList.add('summary-updated');
+        setTimeout(() => row.classList.remove('summary-updated'), 1);
+    });
+}

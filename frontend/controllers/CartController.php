@@ -210,4 +210,59 @@ class CartController extends Controller
         return $this->render('empty-cart');
     }
 
+    public function actionPlus($id)
+    {
+        Yii::$app->response->format = Response::FORMAT_JSON;
+
+        $orderProduct = OrderProducts::findOne($id);
+        if (!$orderProduct) {
+            return ['success' => false, 'message' => 'Товар не найден'];
+        }
+
+        $orderProduct->quantity += 1;
+        if ($orderProduct->save()) {
+            $order = $orderProduct->order;
+            $order->updateTotalPrice();
+
+            return [
+                'success' => true,
+                'quantity' => $orderProduct->quantity,
+                'order' => [
+                    'products_count' => $order->getCountProducts(),
+                    'total_price' => $order->total_price
+                ]
+            ];
+        }
+
+        return ['success' => false, 'message' => 'Ошибка сохранения'];
+    }
+
+    public function actionMinus($id)
+    {
+        Yii::$app->response->format = Response::FORMAT_JSON;
+
+        $orderProduct = OrderProducts::findOne($id);
+        if (!$orderProduct) {
+            return ['success' => false, 'message' => 'Товар не найден'];
+        }
+
+        if ($orderProduct->quantity > 1) {
+            $orderProduct->quantity -= 1;
+            if ($orderProduct->save()) {
+                $order = $orderProduct->order;
+                $order->updateTotalPrice();
+
+                return [
+                    'success' => true,
+                    'quantity' => $orderProduct->quantity,
+                    'order' => [
+                        'products_count' => $order->getCountProducts(),
+                        'total_price' => $order->total_price
+                    ]
+                ];
+            }
+        }
+
+        return ['success' => true, 'quantity' => $orderProduct->quantity];
+    }
 }
