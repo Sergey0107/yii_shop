@@ -21,6 +21,7 @@ use yii\web\UploadedFile;
  * @property int $material_id
  * @property bool $is_new
  * @property bool $is_popular
+ * @property int $old_price
  *
  * @property Color $color
  * @property Country $country
@@ -52,7 +53,7 @@ class Product extends \yii\db\ActiveRecord
             [['description', 'img'], 'default', 'value' => null],
             [['is_active', 'is_new', 'is_popular'], 'default', 'value' => 0],
             [['name', 'price', 'size_id', 'type_id', 'country_id', 'color_id', 'material_id'], 'required'],
-            [['price', 'quantity', 'is_active', 'size_id', 'type_id', 'country_id', 'color_id', 'material_id', 'is_new', 'is_popular'], 'integer'],
+            [['price', 'quantity', 'is_active', 'size_id', 'type_id', 'country_id', 'color_id', 'material_id', 'is_new', 'is_popular', 'old_price'], 'integer'],
             [['name', 'description', 'img'], 'string', 'max' => 255],
             [['name'], 'unique'],
             [['color_id'], 'exist', 'skipOnError' => true, 'targetClass' => Color::class, 'targetAttribute' => ['color_id' => 'id']],
@@ -107,7 +108,8 @@ class Product extends \yii\db\ActiveRecord
             'color_id' => 'Цвет',
             'material_id' => 'Материал',
             'is_new' => 'Новинка',
-            'is_popular' => 'Популярный'
+            'is_popular' => 'Популярный',
+            'old_price' => 'Цена до скидки'
         ];
     }
 

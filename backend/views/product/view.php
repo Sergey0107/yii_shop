@@ -46,6 +46,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 },
             ],
             'price',
+            'old_price',
             'quantity',
             [
                 'attribute' => 'is_active',

@@ -29,7 +29,7 @@ $this->params['breadcrumbs'][] = 'Редактировать';
         'colors' => $colors,
         'types' => $types,
         'materials' => $materials,
-        'properties' => $properties,         // <-- ДОЛЖНО БЫТЬ ЭТО
+        'properties' => $properties,
         'currentProperties' => $currentProperties,
     ]) ?>
 

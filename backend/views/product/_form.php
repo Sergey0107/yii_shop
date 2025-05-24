@@ -50,6 +50,8 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'price')->textInput() ?>
 
+    <?= $form->field($model, 'old_price')->textInput() ?>
+
     <?= $form->field($model, 'quantity')->textInput() ?>
 
     <?= $form->field($model, 'is_active')->textInput() ?>

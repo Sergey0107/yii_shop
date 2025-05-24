@@ -69,10 +69,13 @@ $types = Type::find()->select(['id', 'name'])->asArray()->all();
                 <div class="product-grid">
                     <?php foreach ($popularProducts as $product) { ?>
                         <div class="product-card fade-in">
-                            <?php if (rand(0, 1)): ?>
+                            <?php if ($product->is_new): ?>
                                 <span class="product-badge">Новинка</span>
-                            <?php elseif (rand(0, 1)): ?>
-                                <span class="product-badge" style="background-color: var(--danger);">Скидка <?= rand(10, 30) ?>%</span>
+                            <?php elseif ($product->old_price): ?>
+                            <?php $discount = 100 - (ceil($product->price * 100 / $product->old_price)); ?>
+                                <span class="product-badge" style="background-color: var(--danger);">Скидка <?= $discount ?>%</span>
+                            <?php elseif ($product->is_popular):  ?>
+                                <span class="product-badge hit-fire">ХИТ</span>
                             <?php endif; ?>
 
                             <button class="product-wishlist">
@@ -121,10 +124,11 @@ $types = Type::find()->select(['id', 'name'])->asArray()->all();
 
                                 <div class="product-price">
                                     <span class="current-price"><?= number_format($product->price, 0, '', ' ') ?> ₽</span>
-                                    <?php if (rand(0, 1)): ?>
-                                        <span class="old-price"><?= number_format($product->price * 1.2, 0, '', ' ') ?> ₽</span>
-                                        <span class="discount">-<?= rand(10, 25) ?>%</span>
-                                    <?php endif; ?>
+                                    <?php if ($product->old_price) { ?>
+                                        <span class="old-price"><?= number_format($product->old_price, 0, '', ' ') ?> ₽</span>
+                                        <?php $discount = 100 - (ceil($product->price * 100 / $product->old_price)); ?>
+                                        <span class="discount">-<?= $discount ?>%</span>
+                                    <?php } ?>
                                 </div>
 
                                 <div class="product-actions">
@@ -239,10 +243,11 @@ $types = Type::find()->select(['id', 'name'])->asArray()->all();
 
                                 <div class="product-price">
                                     <span class="current-price"><?= number_format($product->price, 0, '', ' ') ?> ₽</span>
-                                    <?php if (rand(0, 1)): ?>
-                                        <span class="old-price"><?= number_format($product->price * 1.2, 0, '', ' ') ?> ₽</span>
-                                        <span class="discount">-<?= rand(10, 25) ?>%</span>
-                                    <?php endif; ?>
+                                    <?php if ($product->old_price) { ?>
+                                        <span class="old-price"><?= number_format($product->old_price, 0, '', ' ') ?> ₽</span>
+                                        <?php $discount = 100 - (ceil($product->price * 100 / $product->old_price)); ?>
+                                        <span class="discount">-<?= $discount ?>%</span>
+                                    <?php } ?>
                                 </div>
 
                                 <div class="product-actions">
@@ -318,3 +323,46 @@ $types = Type::find()->select(['id', 'name'])->asArray()->all();
         });
     });
 </script>
+
+<style>
+    .hit-fire {
+        background: linear-gradient(45deg, #ff0000, #ff7700, #ffbb00);
+        color: white;
+        font-weight: bold;
+        text-shadow: 0 0 3px rgba(0,0,0,0.3);
+        padding: 4px 10px;
+        border-radius: 12px;
+        animation: fire-pulse 1.5s infinite alternate;
+        box-shadow: 0 0 5px rgba(255, 60, 0, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        display: inline-block;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hit-fire::before {
+        content: '';
+        position: absolute;
+        top: -10px;
+        left: -20px;
+        right: -20px;
+        bottom: -10px;
+        background: linear-gradient(45deg,
+        rgba(255,0,0,0.3) 0%,
+        rgba(255,119,0,0.3) 50%,
+        rgba(255,187,0,0.3) 100%);
+        z-index: -1;
+        filter: blur(8px);
+        animation: fire-glow 2s infinite alternate;
+    }
+
+    @keyframes fire-pulse {
+        0% { transform: scale(1); box-shadow: 0 0 5px rgba(255, 60, 0, 0.7); }
+        100% { transform: scale(1.05); box-shadow: 0 0 15px rgba(255, 60, 0, 0.9); }
+    }
+
+    @keyframes fire-glow {
+        0% { opacity: 0.5; }
+        100% { opacity: 1; }
+    }
+</style>
