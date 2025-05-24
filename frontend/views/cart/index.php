@@ -28,35 +28,47 @@ $this->title = 'Корзина';
                         </div>
                         <div class="product-list-scrollable">
                             <?php foreach ($orderProducts as $orderProduct): ?>
-                                <div class="product-card">
+                                <div class="product-card" style="--card-accent: <?= sprintf('#%06X', mt_rand(0, 0xFFFFFF)) ?>">
                                     <div class="product-image">
                                         <?php if ($orderProduct->product->img): ?>
                                             <img src="<?= $backendUploads->baseUrl ?>/product/<?= $orderProduct->product->img ?>" alt="<?= Html::encode($orderProduct->product->name) ?>" loading="lazy">
                                         <?php else: ?>
                                             <img src="<?= $backendUploads->baseUrl ?>/product/no-image.png" alt="No Image" loading="lazy">
                                         <?php endif; ?>
+                                        <div class="product-image-overlay"></div>
                                     </div>
 
                                     <div class="product-details">
-                                        <h3 class="product-title"><?= Html::encode($orderProduct->product->name) ?></h3>
-                                        <div class="product-meta">
-                                           <span class="product-price" data-price="<?= $orderProduct->product->price ?>"><?= Yii::$app->formatter->asDecimal($orderProduct->product->price) ?> ₽ </span>
-                                            <div class="quantity-controls">
-                                                <button class="quantity-btn minus" data-order-product-id="<?= $orderProduct->id ?>">-</button>
-                                                <span class="product-quantity"><?= $orderProduct->quantity ?></span>
-                                                <button class="quantity-btn plus" data-order-product-id="<?= $orderProduct->id ?>">+</button>
+                                        <div class="product-header">
+                                            <h3 class="product-title"><?= Html::encode($orderProduct->product->name) ?></h3>
+                                            <div class="product-actions">
+                                                <button class="product-remove" data-order-product-id="<?= $orderProduct->id ?>">
+                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                                                        <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                                    </svg>
+                                                </button>
                                             </div>
                                         </div>
-                                        <div class="product-total"><?= Yii::$app->formatter->asDecimal($orderProduct->product->price * $orderProduct->quantity) ?> ₽</div>
-                                    </div>
 
-                                    <div class="product-actions">
-                                        <meta name="csrf-token" content="<?= Yii::$app->request->csrfToken ?>">
-                                        <button class="product-remove" data-order-product-id="<?= $orderProduct->id ?>">
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                            </svg>
-                                        </button>
+                                        <div class="product-meta-wrapper">
+                                            <div class="product-meta">
+                                <span class="product-price" data-price="<?= $orderProduct->product->price ?>">
+                                    <?= Yii::$app->formatter->asDecimal($orderProduct->product->price) ?> ₽
+                                </span>
+                                                <div class="quantity-controls">
+                                                    <button class="quantity-btn minus" data-order-product-id="<?= $orderProduct->id ?>">
+                                                        <svg width="14" height="2" viewBox="0 0 14 2"><path d="M1 1h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                                                    </button>
+                                                    <span class="product-quantity"><?= $orderProduct->quantity ?></span>
+                                                    <button class="quantity-btn plus" data-order-product-id="<?= $orderProduct->id ?>">
+                                                        <svg width="14" height="14" viewBox="0 0 14 14"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div class="product-total">
+                                                <?= Yii::$app->formatter->asDecimal($orderProduct->product->price * $orderProduct->quantity) ?> ₽
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             <?php endforeach; ?>
@@ -145,3 +157,181 @@ $this->title = 'Корзина';
 </script>
 
 <script src="https://api-maps.yandex.ru/2.1/?apikey=YOUR_API_KEY&lang=ru_RU" type="text/javascript"></script>
+<style>
+    /* Новые стили для улучшенного дизайна */
+    .product-list-container {
+        background: transparent;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .product-card {
+        display: flex;
+        width: 100%;
+        background: white;
+        margin-bottom: 16px;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        position: relative;
+    }
+
+    .product-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .product-image {
+        width: 120px;
+        height: 120px;
+        flex-shrink: 0;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .product-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+
+    .product-card:hover .product-image img {
+        transform: scale(1.05);
+    }
+
+    .product-image-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(var(--card-accent-rgb), 0.1) 0%, rgba(var(--card-accent-rgb), 0.05) 100%);
+    }
+
+    .product-details {
+        flex: 1;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .product-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 12px;
+    }
+
+    .product-title {
+        font-size: 1rem;
+        font-weight: 600;
+        margin: 0;
+        color: #1a1a1a;
+        flex: 1;
+        padding-right: 10px;
+    }
+
+    .product-meta-wrapper {
+        margin-top: auto;
+    }
+
+    .product-meta {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 8px;
+    }
+
+    .product-price {
+        font-weight: 700;
+        font-size: 1rem;
+        color: var(--card-accent);
+        min-width: 80px;
+    }
+
+    .quantity-controls {
+        display: flex;
+        align-items: center;
+        background: #f8fafc;
+        border-radius: 8px;
+        padding: 4px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .quantity-btn {
+        width: 28px;
+        height: 28px;
+        border: none;
+        background: white;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        color: var(--card-accent);
+    }
+
+    .quantity-btn:hover {
+        background: rgba(var(--card-accent-rgb), 0.1);
+    }
+
+    .quantity-btn svg {
+        transition: transform 0.2s ease;
+    }
+
+    .quantity-btn:active svg {
+        transform: scale(0.9);
+    }
+
+    .product-quantity {
+        min-width: 30px;
+        text-align: center;
+        font-weight: 500;
+        font-size: 0.95rem;
+    }
+
+    .product-total {
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: #1a1a1a;
+        text-align: right;
+        padding-top: 8px;
+        border-top: 1px dashed #e2e8f0;
+    }
+
+    .product-actions {
+        margin-left: auto;
+    }
+
+    .product-remove {
+        background: none;
+        border: none;
+        padding: 4px;
+        cursor: pointer;
+        color: #94a3b8;
+        transition: all 0.2s ease;
+    }
+
+    .product-remove:hover {
+        color: #ef4444;
+        transform: rotate(90deg);
+    }
+
+    /* Анимации */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .product-card {
+        animation: fadeIn 0.4s ease forwards;
+    }
+
+    /* Для работы с CSS переменными */
+    .product-card {
+        --card-accent-rgb: <?= mt_rand(50, 200) ?>, <?= mt_rand(50, 200) ?>, <?= mt_rand(50, 200) ?>;
+    }
+</style>
