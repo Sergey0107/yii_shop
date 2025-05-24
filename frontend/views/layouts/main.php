@@ -425,7 +425,10 @@ AppAsset::register($this);
                                 if (Yii::$app->user->identity) {
                                     $user = User::findOne(Yii::$app->user->id);
                                     $order = Order::findOne(['user_id' => Yii::$app->user->id, 'status' => Order::STATUS_DRAFT]);
-                                    $cartCount = $order->getCountProducts();
+                                    if ($order) {
+                                        $cartCount = $order->getCountProducts();
+                                    }
+
                                 }
 
                             ?>

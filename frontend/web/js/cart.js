@@ -174,7 +174,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         document.querySelectorAll('.summary-row.total').forEach(row => {
             row.classList.add('summary-updated');
-            setTimeout(() => row.classList.remove('summary-updated'), 500);
+            setTimeout(() => row.classList.remove('summary-updated'), 1);
         });
     }
 
