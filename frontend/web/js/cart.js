@@ -59,10 +59,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Обработчик для кнопки удаления товара
     document.querySelectorAll('.product-remove').forEach(button => {
         button.addEventListener('click', function() {
-            const productId = this.dataset.productId;
+            // Получаем order_product_id вместо product_id
+            const orderProductId = this.dataset.orderProductId;
             const productCard = this.closest('.product-card');
+
             if (confirm('Удалить товар из корзины?')) {
-                fetch('/cart/delete?product_id=' + productId, {
+                fetch('/cart/remove?order_product_id=' + orderProductId, {
                     method: 'POST',
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest',
@@ -114,50 +116,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Обработчик оформления заказа
-    document.getElementById('submitOrder').addEventListener('click', function() {
-        const phone = document.getElementById('phone').value;
-        const email = document.getElementById('email').value;
-        const comment = document.getElementById('comment').value;
-        const pickupPoint = document.querySelector('input[name="pickup_point"]:checked')?.value;
-
-        if (!phone || !email) {
-            alert('Пожалуйста, заполните все обязательные поля');
-            return;
-        }
-
-        if (!pickupPoint) {
-            alert('Пожалуйста, выберите пункт выдачи');
-            return;
-        }
-
-        const formData = new FormData();
-        formData.append('phone', phone);
-        formData.append('email', email);
-        formData.append('comment', comment);
-        formData.append('pickup_point', pickupPoint);
-
-        fetch('/order/create', {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
-            }
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    window.location.href = '/order/success?id=' + data.orderId;
-                } else {
-                    alert(data.message || 'Ошибка при оформлении заказа');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Ошибка при оформлении заказа');
-            });
-    });
 
     // Маска для телефона
     const phoneInput = document.getElementById('phone');
@@ -165,11 +123,4 @@ document.addEventListener('DOMContentLoaded', function() {
         const x = this.value.replace(/\D/g, '').match(/(\d{0,1})(\d{0,3})(\d{0,3})(\d{0,2})(\d{0,2})/);
         this.value = !x[2] ? x[1] : '+' + x[1] + ' (' + x[2] + (x[3] ? ') ' + x[3] + (x[4] ? '-' + x[4] : '') + (x[5] ? '-' + x[5] : '') : '');
     });
-
-    // Обновление итоговой информации
-    function updateOrderSummary(order) {
-        document.querySelector('.summary-row.total span:last-child').textContent = order.total_price + ' ₽';
-        document.querySelector('.summary-row:first-child span:last-child').textContent = order.total_price + ' ₽';
-        document.querySelector('.summary-row:first-child span:first-child').textContent = 'Товары (' + order.products_count + ')';
-    }
 });

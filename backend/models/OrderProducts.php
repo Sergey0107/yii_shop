@@ -5,6 +5,7 @@ namespace backend\models;
 use backend\models\Order;
 use backend\models\Product;
 use Yii;
+use yii\db\StaleObjectException;
 
 /**
  * This is the model class for table "order_products".
@@ -12,12 +13,16 @@ use Yii;
  * @property int $id
  * @property int|null $order_id
  * @property int|null $product_id
+ * @property int|null $quantity
  *
  * @property Order $order
  * @property Product $product
  */
 class OrderProducts extends \yii\db\ActiveRecord
 {
+    /**
+     * @var mixed|null
+     */
 
 
     /**
@@ -50,7 +55,25 @@ class OrderProducts extends \yii\db\ActiveRecord
             'id' => 'ID',
             'order_id' => 'Order ID',
             'product_id' => 'Product ID',
+            'quantity' => 'Quantity',
         ];
+    }
+
+    /**
+     * @throws \Throwable
+     * @throws StaleObjectException
+     */
+    public function afterDelete()
+    {
+        parent::afterDelete();
+
+        $order = Order::findOne($this->order_id);
+        if ($order) {
+            $order->updateTotalPrice();
+            if ($order->total_price == 0) {
+                $order->delete();
+            }
+        }
     }
 
     /**

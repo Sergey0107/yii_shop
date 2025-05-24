@@ -123,6 +123,7 @@ class CartController extends Controller
         $orderProduct = new OrderProducts();
         $orderProduct->order_id = $order->id;
         $orderProduct->product_id = $productId;
+        $orderProduct->quantity = 1;
 
         if (!$orderProduct->save()) {
             return ['success' => false, 'errors' => $orderProduct->getErrors()];
@@ -135,32 +136,27 @@ class CartController extends Controller
      * @throws \Throwable
      * @throws StaleObjectException
      */
-    public function actionDelete()
+    public function actionRemove()
     {
         Yii::$app->response->format = Response::FORMAT_JSON;
 
-        $order = Order::findOne(['user_id' => Yii::$app->user->id, 'status' => Order::STATUS_DRAFT]);
-        if (!$order) {
-            return ['success' => false, 'message' => 'Заказ не найден'];
-        }
+        $orderProductId = Yii::$app->request->get('order_product_id');
+        $orderProduct = OrderProducts::findOne($orderProductId);
 
-        $orderProduct = OrderProducts::findOne([
-            'order_id' => $order->id,
-            'product_id' => Yii::$app->request->get('product_id'),
-        ]);
         if (!$orderProduct) {
-            return ['success' => false, 'message' => 'Товар не найден в заказе'];
+            return ['success' => false, 'message' => 'Позиция не найдена в заказе'];
         }
-
-        if ($orderProduct->delete()) {
-            $order->updateTotalPrice();
-            return ['success' => true];
+        if (!$orderProduct->delete()) {
+            return ['success' => false, 'errors' => $orderProduct->getErrors()];
         }
-
-        return ['success' => false, 'message' => 'Не удалось удалить товар'];
+        return ['success' => true, 'message' => 'Товар успешно удален из корзины'];
     }
 
-    public function actionClear()
+    /**
+     * @throws \Throwable
+     * @throws StaleObjectException
+     */
+    public function actionClear(): array
     {
         Yii::$app->response->format = Response::FORMAT_JSON;
 
@@ -169,16 +165,22 @@ class CartController extends Controller
             return ['success' => false, 'message' => 'Заказ не найден'];
         }
 
-        $orderProducts = OrderProducts::find()->where(['order_id' => $order->id])->all();
-        foreach ($orderProducts as $orderProduct) {
-            $orderProduct->delete();
-        }
+        $transaction = Yii::$app->db->beginTransaction();
+        try {
+            $deletedRows = OrderProducts::deleteAll(['order_id' => $order->id]);
+            if ($order->delete()) {
+                $transaction->commit();
+                return ['success' => true];
+            }
 
-        if ($order->delete()) {
-            return ['success' => true];
-        }
+            $transaction->rollBack();
+            return ['success' => false, 'message' => 'Не удалось очистить корзину'];
+        } catch (\Exception $e) {
 
-        return ['success' => false, 'message' => 'Не удалось очистить корзину'];
+            $transaction->rollBack();
+            Yii::error("Ошибка при очистке корзины: " . $e->getMessage());
+            return ['success' => false, 'message' => 'Произошла ошибка при очистке корзины'];
+        }
     }
 
 }
