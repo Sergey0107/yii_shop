@@ -60,11 +60,11 @@ class CartController extends Controller
     {
         $order = Order::findOne(['user_id' => Yii::$app->user->id, 'status' => Order::STATUS_DRAFT]);
         if (!$order) {
-            return $this->redirect(['cart/empty']);
+            return $this->render('empty-cart');
         }
         $orderProducts = OrderProducts::find()->where(['order_id' => $order->id])->all();
         if (!$orderProducts) {
-            return $this->redirect(['cart/empty']);
+            return $this->render('empty-cart');
         }
 
         return $this->render('index', [
@@ -181,6 +181,11 @@ class CartController extends Controller
             Yii::error("Ошибка при очистке корзины: " . $e->getMessage());
             return ['success' => false, 'message' => 'Произошла ошибка при очистке корзины'];
         }
+    }
+
+    public function actionEmpty()
+    {
+        return $this->render('empty-cart');
     }
 
 }

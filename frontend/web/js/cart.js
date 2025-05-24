@@ -56,12 +56,11 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Обработчик для кнопки удаления товара
     document.querySelectorAll('.product-remove').forEach(button => {
         button.addEventListener('click', function() {
-            // Получаем order_product_id вместо product_id
             const orderProductId = this.dataset.orderProductId;
             const productCard = this.closest('.product-card');
+            const productCards = document.querySelectorAll('.product-card'); // Все карточки товаров
 
             if (confirm('Удалить товар из корзины?')) {
                 fetch('/cart/remove?order_product_id=' + orderProductId, {
@@ -74,10 +73,21 @@ document.addEventListener('DOMContentLoaded', function() {
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
+                            // Анимация удаления карточки
                             productCard.style.opacity = '0';
                             setTimeout(() => {
                                 productCard.remove();
-                                updateOrderSummary(data.order);
+
+                                // Проверяем остались ли еще товары
+                                const remainingProducts = document.querySelectorAll('.product-card').length;
+
+                                if (remainingProducts === 0) {
+                                    // Если товаров не осталось - редирект
+                                    window.location.href = '/cart/empty';
+                                } else {
+                                    // Если товары остались - обновляем итоги
+                                    updateOrderSummary(data.order);
+                                }
                             }, 300);
                         } else {
                             alert('Ошибка при удалении товара');
@@ -123,4 +133,33 @@ document.addEventListener('DOMContentLoaded', function() {
         const x = this.value.replace(/\D/g, '').match(/(\d{0,1})(\d{0,3})(\d{0,3})(\d{0,2})(\d{0,2})/);
         this.value = !x[2] ? x[1] : '+' + x[1] + ' (' + x[2] + (x[3] ? ') ' + x[3] + (x[4] ? '-' + x[4] : '') + (x[5] ? '-' + x[5] : '') : '');
     });
+
+    /**
+     * Обновляет блок с итоговой информацией о заказе
+     * @param {Object} orderData - Данные заказа с сервера
+     */
+    function updateOrderSummary(orderData) {
+        // Обновляем количество товаров
+        const productCountElement = document.querySelector('.summary-row:first-child span:first-child');
+        if (productCountElement) {
+            productCountElement.textContent = `Товары (${orderData.products_count || 0})`;
+        }
+
+        // Обновляем общую стоимость
+        const totalPriceElements = document.querySelectorAll('.summary-row span:last-child');
+        if (totalPriceElements.length > 0) {
+            totalPriceElements.forEach(el => {
+                el.textContent = `${orderData.total_price || 0} ₽`;
+            });
+        }
+
+        // Если это итоговая строка, добавляем класс для анимации
+        const totalRow = document.querySelector('.summary-row.total');
+        if (totalRow) {
+            totalRow.classList.add('updated');
+            setTimeout(() => {
+                totalRow.classList.remove('updated');
+            }, 500);
+        }
+    }
 });
