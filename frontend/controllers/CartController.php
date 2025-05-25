@@ -248,7 +248,7 @@ class CartController extends Controller
 
         if ($orderProduct->quantity > 1) {
             $orderProduct->quantity -= 1;
-            if ($orderProduct->save()) {
+            if ($orderProduct->save(false)) {
                 $order = $orderProduct->order;
                 $order->updateTotalPrice();
 
