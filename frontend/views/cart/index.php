@@ -24,7 +24,6 @@ $this->title = 'Корзина';
                     <div class="product-list-container">
                         <div class="product-list-header">
                             <h3>Ваши товары</h3>
-                            <span class="items-count"><?= count($orderProducts) ?> товара</span>
                         </div>
                         <div class="product-list-scrollable">
                             <?php foreach ($orderProducts as $orderProduct): ?>
@@ -83,12 +82,12 @@ $this->title = 'Корзина';
 
                         <div class="summary-details">
                             <div class="summary-row">
-                                <span>Товары (<?= count($orderProducts) ?>)</span>
+                                <span>Товары (<?= ($order->getCountProducts()) ?>)</span>
                                 <span><?= Yii::$app->formatter->asDecimal($order->total_price) ?> ₽</span>
                             </div>
-                            <div class="summary-row">
+                            <div class="summary-row-delivery">
                                 <span>Доставка</span>
-                                <span>Бесплатно</span>
+                                <span class="delivery-price">Бесплатно</span>
                             </div>
                             <div class="summary-divider"></div>
                             <div class="summary-row total">

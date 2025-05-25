@@ -73,19 +73,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            // Анимация удаления карточки
                             productCard.style.opacity = '0';
                             setTimeout(() => {
                                 productCard.remove();
 
-                                // Проверяем остались ли еще товары
                                 const remainingProducts = document.querySelectorAll('.product-card').length;
 
                                 if (remainingProducts === 0) {
-                                    // Если товаров не осталось - редирект
                                     window.location.href = '/cart/empty';
                                 } else {
-                                    // Если товары остались - обновляем итоги
                                     updateOrderSummary(data.order);
                                 }
                             }, 1);
@@ -133,50 +129,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const x = this.value.replace(/\D/g, '').match(/(\d{0,1})(\d{0,3})(\d{0,3})(\d{0,2})(\d{0,2})/);
         this.value = !x[2] ? x[1] : '+' + x[1] + ' (' + x[2] + (x[3] ? ') ' + x[3] + (x[4] ? '-' + x[4] : '') + (x[5] ? '-' + x[5] : '') : '');
     });
-
-    function updateOrderSummary(orderData) {
-        if (!orderData) return;
-
-        const totalItems = orderData.products_count || 0;
-        const totalPrice = orderData.total_price || 0;
-
-        updateCartBadge(totalItems);
-
-        updateOrderSummaryElements(totalItems, totalPrice);
-    }
-
-    function updateCartBadge(count) {
-        const badges = document.querySelectorAll('.position-absolute.badge.bg-danger.cart-counter');
-
-        badges.forEach(badge => {
-            // Обновляем текст и видимость
-            badge.textContent = count;
-            badge.style.display = count > 0 ? '' : 'none';
-
-            badge.dataset.count = count;
-
-            badge.classList.add('badge-pulse');
-            setTimeout(() => badge.classList.remove('badge-pulse'), 300);
-        });
-    }
-
-    function updateOrderSummaryElements(itemsCount, totalPrice) {
-        // Обновление количества товаров
-        document.querySelectorAll('.summary-row:first-child span:first-child').forEach(el => {
-            el.textContent = `Товары (${itemsCount})`;
-        });
-
-        // Обновление цены
-        const formattedPrice = new Intl.NumberFormat('ru-RU').format(totalPrice);
-        document.querySelectorAll('.summary-row span:last-child').forEach(el => {
-            el.textContent = `${formattedPrice} ₽`;
-        });
-
-        document.querySelectorAll('.summary-row.total').forEach(row => {
-            row.classList.add('summary-updated');
-            setTimeout(() => row.classList.remove('summary-updated'), 1);
-        });
-    }
 
 });
 
@@ -228,7 +180,7 @@ function updateQuantity(orderProductId, action) {
                 }
 
                 // Обновляем сводку
-                updateOrderSummary(data.order);
+                this.updateOrderSummary(data.order);
             } else {
                 alert(data.message || 'Ошибка при изменении количества');
             }
@@ -243,6 +195,7 @@ function updateQuantity(orderProductId, action) {
 }
 
 function updateOrderSummary(orderData) {
+    console.log(orderData);
     if (!orderData) return;
 
     const totalItems = orderData.products_count || 0;
@@ -264,24 +217,37 @@ function updateCartBadge(count) {
         badge.dataset.count = count;
 
         badge.classList.add('badge-pulse');
-        setTimeout(() => badge.classList.remove('badge-pulse'), 300);
+        setTimeout(() => badge.classList.remove('badge-pulse'), 0);
     });
 }
 
 function updateOrderSummaryElements(itemsCount, totalPrice) {
-    // Обновление количества товаров
+    if (typeof totalPrice !== 'number') {
+        console.error('Invalid totalPrice:', totalPrice);
+        return;
+    }
+
+    const formattedPrice = new Intl.NumberFormat('ru-RU').format(totalPrice);
+
+
+    const itemsText = `Товары (${itemsCount})`;
     document.querySelectorAll('.summary-row:first-child span:first-child').forEach(el => {
-        el.textContent = `Товары (${itemsCount})`;
+        el.textContent = itemsText;
     });
 
-    // Обновление цены
-    const formattedPrice = new Intl.NumberFormat('ru-RU').format(totalPrice);
-    document.querySelectorAll('.summary-row span:last-child').forEach(el => {
+
+    document.querySelectorAll('.summary-row:not(.total) span:last-child').forEach(el => {
         el.textContent = `${formattedPrice} ₽`;
     });
 
+
+    document.querySelectorAll('.summary-row.total span:last-child').forEach(el => {
+        el.textContent = `${formattedPrice} ₽`;
+    });
+
+
     document.querySelectorAll('.summary-row.total').forEach(row => {
         row.classList.add('summary-updated');
-        setTimeout(() => row.classList.remove('summary-updated'), 1);
+        setTimeout(() => row.classList.remove('summary-updated'), 0);
     });
 }

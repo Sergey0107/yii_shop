@@ -135,6 +135,7 @@ class CartController extends Controller
         }
 
         $count = $order->getCountProducts();
+        $order->updateTotalPrice();
         return ['success' => true, 'count' => $count];
     }
 
@@ -158,6 +159,7 @@ class CartController extends Controller
 
         $order = Order::findOne(['user_id' => Yii::$app->user->id, 'status' => Order::STATUS_DRAFT]);
         if ($order) {
+            $order->updateTotalPrice();
             $count = $order->getCountProducts();
             $orderData = [
                 'total_price' => $order->total_price,

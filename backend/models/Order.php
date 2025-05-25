@@ -139,6 +139,7 @@ class Order extends \yii\db\ActiveRecord
         }
 
         $this->total_price = $total;
+        $this->save(false);
     }
 
     public function getCountProducts(): int
