@@ -7,6 +7,7 @@ use backend\models\Order;
 use backend\models\Product;
 use backend\models\OrderProducts;
 use Yii;
+use yii\db\Exception;
 use yii\db\StaleObjectException;
 use yii\web\Controller;
 use yii\web\Response;
@@ -266,5 +267,63 @@ class CartController extends Controller
         }
 
         return ['success' => true, 'quantity' => $orderProduct->quantity];
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function actionSubmit()
+    {
+        Yii::$app->response->format = Response::FORMAT_JSON;
+        $post = Yii::$app->request->post();
+
+        if (!$post) {
+            return ['success' => false, 'message' => 'Ошибка при оформлении заказа'];
+        }
+
+        $phone = $post['phone'] ?? null;
+        $email = $post['email'] ?? null;
+        $deliveryId = $post['delivery_id'] ?? null;
+        $pickupPointId = $post['pickup_point_id'] ?? null;
+        $city = $post['city'] ?? null;
+        $street = $post['street'] ?? null;
+        $house = $post['house'] ?? null;
+        $comment = $post['comment'] ?? null;
+        $paymentMethod = $post['payment_method'] ?? null;
+
+        if (!$phone || !$email || !$deliveryId || !$paymentMethod) {
+            return ['success' => false, 'message' => 'Заполните все необходимые данные!'];
+        }
+
+        if ($deliveryId == '1' && !$pickupPointId) {
+            return ['success' => false, 'message' => 'Неизвестный ПВЗ!'];
+        }
+
+        if ($deliveryId == '2' && (!$city || !$street || !$house)) {
+            return ['success' => false, 'message' => 'Заполните все данные!'];
+        }
+
+        $order = Order::findOne(['user_id' => Yii::$app->user->id, 'status' => Order::STATUS_DRAFT]);
+        $order->payment_method_id = $paymentMethod;
+        $order->delivery_id = $deliveryId;
+        $order->pickup_point_id = $pickupPointId;
+        $order->city = $city;
+        $order->street = $street;
+        $order->house = $house;
+        $order->comment = $comment;
+        $order->email = $email;
+        $order->phone = $phone;
+        $order->status = Order::STATUS_CREATED;
+
+        if (!$order->save(false)) {
+            return ['success' => false, 'message' => $order->getErrors()];
+        }
+
+        return ['success' => true];
+    }
+
+    public function actionSuccessOrder()
+    {
+        return $this->render('success-order');
     }
 }

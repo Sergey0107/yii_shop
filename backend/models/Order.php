@@ -14,7 +14,15 @@ use Yii;
  * @property int $status
  * @property string $created_at
  * @property int $delivery_id
- * @property string|null $delivery_address
+ * @property string|null $pickup_point_id
+ * @property string|null $city
+ * @property string|null $street
+ * @property string|null $house
+ * @property string|null $comment
+ * @property string|null $phone
+ * @property string|null $email
+ * @property string|null $payment_method_id
+ *
  *
  * @property Delivery $delivery
  * @property User $user
@@ -69,12 +77,10 @@ class Order extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['delivery_address'], 'default', 'value' => null],
             [['delivery_id'], 'default', 'value' => 1],
             [['user_id', 'total_price', 'status'], 'required'],
             [['user_id', 'total_price', 'status', 'delivery_id'], 'integer'],
             [['created_at'], 'safe'],
-            [['delivery_address'], 'string', 'max' => 255],
             [['status'], 'in', 'range' => array_keys(self::getStatusNames())],
             [['delivery_id'], 'exist', 'skipOnError' => true, 'targetClass' => Delivery::class, 'targetAttribute' => ['delivery_id' => 'id']],
             [['user_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::class, 'targetAttribute' => ['user_id' => 'id']],
@@ -93,8 +99,7 @@ class Order extends \yii\db\ActiveRecord
             'status' => 'Статус',
             'created_at' => 'Дата создания',
             'delivery_id' => 'Способ доставки',
-            'delivery_address' => 'Адрес доставки',
-            'statusName' => 'Статус заказа', // Виртуальный атрибут
+            'statusName' => 'Статус заказа',
         ];
     }
 
