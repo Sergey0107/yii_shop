@@ -13,9 +13,8 @@ use Yii;
 class Delivery extends \yii\db\ActiveRecord
 {
 
-    public const ID_WAREHOUSE = 1;
+    public const ID_PICKUP = 1;
     public const ID_COURIER = 2;
-    public const ID_CDEK = 2;
 
 
     /**

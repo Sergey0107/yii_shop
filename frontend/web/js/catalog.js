@@ -12,7 +12,7 @@ function updateCartCounter(count) {
 
         // Анимация
         badge.classList.add('badge-pulse');
-        setTimeout(() => badge.classList.remove('badge-pulse'), 300);
+        setTimeout(() => badge.classList.remove('badge-pulse'), 1);
     });
 }
 
@@ -29,8 +29,8 @@ function showNotification(message, type = 'success') {
     // Автоматическое скрытие через 3 секунды
     setTimeout(() => {
         notification.classList.add('fade-out');
-        setTimeout(() => notification.remove(), 300);
-    }, 3000);
+        setTimeout(() => notification.remove(), 1);
+    }, 1);
 }
 
 // Стили для уведомлений (можно добавить в CSS)

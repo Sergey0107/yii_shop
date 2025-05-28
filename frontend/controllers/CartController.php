@@ -3,13 +3,18 @@
 namespace frontend\controllers;
 
 use AntistressStore\CdekSDK2\Entity\Requests\DeliveryPoints;
+use backend\models\Delivery;
 use backend\models\Order;
 use backend\models\Product;
 use backend\models\OrderProducts;
+use Cassandra\Exception\ValidationException;
+use Throwable;
 use Yii;
 use yii\db\Exception;
 use yii\db\StaleObjectException;
 use yii\web\Controller;
+use yii\web\HttpException;
+use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
 class CartController extends Controller
@@ -21,6 +26,7 @@ class CartController extends Controller
     {
         parent::__construct($id, $module, $config);
         $this->cdekClient = new \AntistressStore\CdekSDK2\CdekClientV2('TEST');
+
 
         try {
             $requestPvz = (new DeliveryPoints())
@@ -59,11 +65,11 @@ class CartController extends Controller
 
     public function actionIndex()
     {
-        $order = Order::findOne(['user_id' => Yii::$app->user->id, 'status' => Order::STATUS_DRAFT]);
+        $order = $this->findDraftOrder();
         if (!$order) {
             return $this->render('empty-cart');
         }
-        $orderProducts = OrderProducts::find()->where(['order_id' => $order->id])->all();
+        $orderProducts = $this->findOrderPosition($order->id);
         if (!$orderProducts) {
             return $this->render('empty-cart');
         }
@@ -100,99 +106,193 @@ class CartController extends Controller
     public function actionAdd()
     {
         Yii::$app->response->format = Response::FORMAT_JSON;
+
+        try {
+            $product = $this->findProduct();
+            $order = $this->findOrCreateOrder();
+            $orderProduct = $this->processOrderProduct($order, $product);
+
+            $this->saveOrderProduct($orderProduct);
+            $order->updateTotalPrice();
+
+            return [
+                'success' => true,
+                'count' => $order->getCountProducts(),
+                'total_price' => $order->total_price
+            ];
+
+        } catch (\Exception $e) {
+            Yii::error($e->getMessage(), __METHOD__);
+            return $this->prepareErrorResponse($e);
+        }
+    }
+
+    private function findProduct(): Product
+    {
         $productId = (int)Yii::$app->request->post('product_id');
         $product = Product::findOne($productId);
 
         if (!$product) {
-            throw new \Exception('Товар не найден');
+            throw new NotFoundHttpException('Товар не найден');
         }
 
-        $order = Order::findOne(['user_id' => Yii::$app->user->id, 'status' => Order::STATUS_DRAFT]);
+        return $product;
+    }
+
+    private function findDraftOrder(): ?Order
+    {
+        return Order::findOne([
+            'user_id' => Yii::$app->user->id,
+            'status' => Order::STATUS_DRAFT
+        ]);
+    }
+
+    private function findOrderPosition($orderId): ?array
+    {
+        return OrderProducts::find()->where(['order_id' => $orderId])->all();
+    }
+
+    private function findOrCreateOrder(): Order
+    {
+        $order = Order::find()
+            ->where(['user_id' => Yii::$app->user->id, 'status' => Order::STATUS_DRAFT])
+            ->one();
 
         if (!$order) {
-            $order = new Order();
-            $order->user_id = Yii::$app->user->id;
-            $order->status = Order::STATUS_DRAFT;
-            $order->created_at = date('Y-m-d H:i:s', time());
-            $order->total_price = $product->price;
+            $order = new Order([
+                'user_id' => Yii::$app->user->id,
+                'status' => Order::STATUS_DRAFT,
+                'created_at' => date('Y-m-d H:i:s'),
+                'total_price' => 0
+            ]);
 
             if (!$order->save()) {
-                return ['success' => false, 'errors' => $order->getErrors()];
+                throw new \RuntimeException('Не удалось создать заказ: ' . json_encode($order->getErrors()));
             }
         }
 
-        if ($product->inUserOrder()) {
-            $orderProduct = OrderProducts::findOne(['order_id' => $order->id, 'product_id' => $product->id]);
+        return $order;
+    }
+
+    private function processOrderProduct(Order $order, Product $product): OrderProducts
+    {
+        $orderProduct = OrderProducts::findOne([
+            'order_id' => $order->id,
+            'product_id' => $product->id
+        ]);
+
+        if ($orderProduct) {
             $orderProduct->quantity += 1;
         } else {
-            $orderProduct = new OrderProducts();
-            $orderProduct->order_id = $order->id;
-            $orderProduct->product_id = $productId;
-            $orderProduct->quantity = 1;
+            $orderProduct = new OrderProducts([
+                'order_id' => $order->id,
+                'product_id' => $product->id,
+                'quantity' => 1,
+            ]);
         }
 
+        return $orderProduct;
+    }
+
+    private function saveOrderProduct(OrderProducts $orderProduct): void
+    {
         if (!$orderProduct->save()) {
-            return ['success' => false, 'errors' => $orderProduct->getErrors()];
+            throw new \RuntimeException('Не удалось сохранить позицию заказа: ' . json_encode($orderProduct->getErrors()));
         }
+    }
 
-        $count = $order->getCountProducts();
-        $order->updateTotalPrice();
-        return ['success' => true, 'count' => $count];
+    private function prepareErrorResponse(\Exception $e): array
+    {
+        return [
+            'success' => false,
+            'error' => $e->getMessage(),
+            'code' => $e instanceof HttpException ? $e->statusCode : 500
+        ];
     }
 
     /**
-     * @throws \Throwable
+     * @throws Throwable
      * @throws StaleObjectException
      */
-    public function actionRemove()
+    public function actionRemove(): array
     {
         Yii::$app->response->format = Response::FORMAT_JSON;
 
+        try {
+            $orderProduct = $this->findOrderProduct();
+            $this->deleteOrderProduct($orderProduct);
+            $orderData = $this->getOrderData();
+
+            return [
+                'success' => true,
+                'message' => 'Товар успешно удален из корзины',
+                'order' => $orderData
+            ];
+
+        } catch (\Exception $e) {
+            Yii::error('Error removing product: ' . $e->getMessage(), __METHOD__);
+            return $this->prepareErrorResponse($e);
+        }
+    }
+
+    /**
+     * @throws Throwable
+     * @throws StaleObjectException
+     */
+    private function deleteOrderProduct(OrderProducts $orderProduct): void
+    {
+        if (!$orderProduct->delete()) {
+            throw new \RuntimeException('Не удалось удалить позицию: ' . json_encode($orderProduct->getErrors()));
+        }
+    }
+
+    private function getOrderData(): array
+    {
+        $order = $this->findDraftOrder();
+
+        if (!$order) {
+            return [
+                'total_price' => 0,
+                'products_count' => 0
+            ];
+        }
+
+        $order->updateTotalPrice();
+
+        return [
+            'total_price' => $order->total_price,
+            'products_count' => $order->getCountProducts()
+        ];
+    }
+
+    private function findOrderProduct(): OrderProducts
+    {
         $orderProductId = Yii::$app->request->get('order_product_id');
         $orderProduct = OrderProducts::findOne($orderProductId);
 
         if (!$orderProduct) {
-            return ['success' => false, 'message' => 'Позиция не найдена в заказе'];
-        }
-        if (!$orderProduct->delete()) {
-            return ['success' => false, 'errors' => $orderProduct->getErrors()];
+            throw new NotFoundHttpException('Позиция не найдена в заказе');
         }
 
-        $order = Order::findOne(['user_id' => Yii::$app->user->id, 'status' => Order::STATUS_DRAFT]);
-        if ($order) {
-            $order->updateTotalPrice();
-            $count = $order->getCountProducts();
-            $orderData = [
-                'total_price' => $order->total_price,
-                'products_count' => $count,
-            ];
-        } else {
-            $orderData = [
-                'total_price' => 0,
-                'products_count' => 0,
-            ];
-        }
-
-
-        return ['success' => true, 'message' => 'Товар успешно удален из корзины', 'order' => $orderData];
+        return $orderProduct;
     }
 
     /**
-     * @throws \Throwable
+     * @throws Throwable
      * @throws StaleObjectException
      */
     public function actionClear(): array
     {
         Yii::$app->response->format = Response::FORMAT_JSON;
 
-        $order = Order::findOne(['user_id' => Yii::$app->user->id, 'status' => Order::STATUS_DRAFT]);
+        $order = $this->findDraftOrder();
         if (!$order) {
             return ['success' => false, 'message' => 'Заказ не найден'];
         }
 
         $transaction = Yii::$app->db->beginTransaction();
         try {
-            $deletedRows = OrderProducts::deleteAll(['order_id' => $order->id]);
+            OrderProducts::deleteAll(['order_id' => $order->id]);
             if ($order->delete()) {
                 $transaction->commit();
                 return ['success' => true, 'order' => $order];
@@ -204,7 +304,7 @@ class CartController extends Controller
 
             $transaction->rollBack();
             Yii::error("Ошибка при очистке корзины: " . $e->getMessage());
-            return ['success' => false, 'message' => 'Произошла ошибка при очистке корзины'];
+            return $this->prepareErrorResponse($e);
         }
     }
 
@@ -269,61 +369,100 @@ class CartController extends Controller
         return ['success' => true, 'quantity' => $orderProduct->quantity];
     }
 
-    /**
-     * @throws Exception
-     */
-    public function actionSubmit()
-    {
-        Yii::$app->response->format = Response::FORMAT_JSON;
-        $post = Yii::$app->request->post();
-
-        if (!$post) {
-            return ['success' => false, 'message' => 'Ошибка при оформлении заказа'];
-        }
-
-        $phone = $post['phone'] ?? null;
-        $email = $post['email'] ?? null;
-        $deliveryId = $post['delivery_id'] ?? null;
-        $pickupPointId = $post['pickup_point_id'] ?? null;
-        $city = $post['city'] ?? null;
-        $street = $post['street'] ?? null;
-        $house = $post['house'] ?? null;
-        $comment = $post['comment'] ?? null;
-        $paymentMethod = $post['payment_method'] ?? null;
-
-        if (!$phone || !$email || !$deliveryId || !$paymentMethod) {
-            return ['success' => false, 'message' => 'Заполните все необходимые данные!'];
-        }
-
-        if ($deliveryId == '1' && !$pickupPointId) {
-            return ['success' => false, 'message' => 'Неизвестный ПВЗ!'];
-        }
-
-        if ($deliveryId == '2' && (!$city || !$street || !$house)) {
-            return ['success' => false, 'message' => 'Заполните все данные!'];
-        }
-
-        $order = Order::findOne(['user_id' => Yii::$app->user->id, 'status' => Order::STATUS_DRAFT]);
-        $order->payment_method_id = $paymentMethod;
-        $order->delivery_id = $deliveryId;
-        $order->pickup_point_id = $pickupPointId;
-        $order->city = $city;
-        $order->street = $street;
-        $order->house = $house;
-        $order->comment = $comment;
-        $order->email = $email;
-        $order->phone = $phone;
-        $order->status = Order::STATUS_CREATED;
-
-        if (!$order->save(false)) {
-            return ['success' => false, 'message' => $order->getErrors()];
-        }
-
-        return ['success' => true];
-    }
 
     public function actionSuccessOrder()
     {
         return $this->render('success-order');
     }
+
+
+    public function actionSubmit()
+    {
+        Yii::$app->response->format = Response::FORMAT_JSON;
+
+        try {
+            $post = $this->validateRequest();
+            $this->validateRequiredFields($post);
+            $this->validateDeliveryFields($post);
+
+            $order = $this->updateOrder($post);
+            $this->processOrder($order);
+
+            return ['success' => true, 'order_id' => $order->id];
+        } catch (ValidationException $e) {
+            return ['success' => false, 'message' => $e->getMessage()];
+        } catch (\Exception $e) {
+            Yii::error('Order submit error: ' . $e->getMessage(), __METHOD__);
+            return ['success' => false, 'message' => 'Ошибка при оформлении заказа'];
+        }
+    }
+
+    private function validateRequest(): array
+    {
+        $post = Yii::$app->request->post();
+        if (empty($post)) {
+            throw new \Exception('Ошибка при передаче данных');
+        }
+        return $post;
+    }
+
+    private function validateRequiredFields(array $post): void
+    {
+        $required = ['phone', 'email', 'delivery_id', 'payment_method'];
+        foreach ($required as $field) {
+            if (empty($post[$field])) {
+                throw new \Exception('Ошибка при оформлении заказа');
+            }
+        }
+    }
+
+    private function validateDeliveryFields(array $post): void
+    {
+        if ((int)$post['delivery_id'] == Delivery::ID_PICKUP && empty($post['pickup_point_id'])) {
+            throw new \Exception('Заполните недостающие данные');
+        }
+
+        if ((int)$post['delivery_id'] == Delivery::ID_COURIER) {
+            $required = ['city', 'street', 'house'];
+            foreach ($required as $field) {
+                if (empty($post[$field])) {
+                    throw new \Exception('Заполните недостающие данные');
+                }
+            }
+        }
+    }
+
+    private function updateOrder(array $data): Order
+    {
+        $order = Order::find()
+            ->where(['user_id' => Yii::$app->user->id, 'status' => Order::STATUS_DRAFT])
+            ->one();
+
+        if (!$order) {
+            throw new \RuntimeException('Корзина не найдена');
+        }
+
+        $order->setAttributes([
+            'payment_method_id' => $data['payment_method'],
+            'delivery_id' => $data['delivery_id'],
+            'pickup_point_id' => $data['pickup_point_id'] ?? null,
+            'city' => $data['city'] ?? null,
+            'street' => $data['street'] ?? null,
+            'house' => $data['house'] ?? null,
+            'comment' => $data['comment'] ?? null,
+            'email' => $data['email'],
+            'phone' => $data['phone'],
+            'status' => Order::STATUS_CREATED
+        ]);
+
+        return $order;
+    }
+
+    private function processOrder(Order $order): void
+    {
+        if (!$order->save()) {
+            throw new \RuntimeException('Не удалось сохранить заказ: ' . json_encode($order->getErrors()));
+        }
+    }
+
 }

@@ -16,7 +16,7 @@ class m250409_150329_add_table_order extends Migration
             'total_price' => $this->integer()->notNull(),
             'status' => $this->integer()->notNull(),
             'created_at' => $this->dateTime()->defaultValue(date('Y-m-d H:i:s')),
-            'delivery_id' => $this->integer()->notNull()->defaultValue(Delivery::ID_WAREHOUSE),
+            'delivery_id' => $this->integer()->notNull()->defaultValue(Delivery::ID_PICKUP),
             'delivery_address' => $this->string()->defaultValue(null),
         ]);
 
