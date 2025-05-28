@@ -18,48 +18,12 @@ use yii\web\Response;
 
 class CartController extends Controller
 {
-    private $cdekClient;
     private $pickUpPoints;
 
     public function __construct($id, $module, $config = [])
     {
         parent::__construct($id, $module, $config);
-        $this->cdekClient = new \AntistressStore\CdekSDK2\CdekClientV2('TEST');
-
-
-        try {
-            $requestPvz = (new DeliveryPoints())
-                ->setType('PVZ')
-                ->setCityCode(165);
-
-            $response = $this->cdekClient->getDeliveryPoints($requestPvz);
-            $this->pickUpPoints = $this->formatDeliveryPoints($response);
-
-        } catch (\Exception $e) {
-            Yii::error('Ошибка получения пунктов выдачи СДЭК: ' . $e->getMessage());
-            $this->pickUpPoints = $this->getTestPickupPoints(55.7558, 37.6173);
-        }
-    }
-
-    /**
-     * Преобразует объект DeliveryPointsResponse в массив
-     */
-    private function formatDeliveryPoints($response): array
-    {
-        $points = [];
-
-        foreach ($response as $item) {
-            $points[] = [
-                'id' => $item->getCode(),
-                'name' => $item->getName(),
-                'address' => $item->getLocation()->getAddress(),
-                'hours' => $item->getWorkTime() ?? 'пн-пт 9:00-18:00',
-                'lat' => $item->getLocation()->getLatitude(),
-                'lng' => $item->getLocation()->getLongitude(),
-            ];
-        }
-
-        return $points;
+        $this->pickUpPoints = Yii::$app->cdekService->getPickupPoints(165);
     }
 
     public function actionIndex()
@@ -68,6 +32,7 @@ class CartController extends Controller
         if (!$order) {
             return $this->render('empty-cart');
         }
+
         $orderProducts = $this->findOrderPosition($order->id);
         if (!$orderProducts) {
             return $this->render('empty-cart');
@@ -78,28 +43,6 @@ class CartController extends Controller
             'orderProducts' => $orderProducts,
             'pickupPoints' => $this->pickUpPoints,
         ]);
-    }
-
-    private function getTestPickupPoints($lat, $lng): array
-    {
-        return [
-            [
-                'id' => 'PVZ1',
-                'name' => 'SDEK Тестовый пункт №1',
-                'address' => 'ул. Тестовая, д. 1, Москва',
-                'hours' => 'пн-пт 8:00-20:00, сб 9:00-18:00',
-                'lat' => $lat + 0.01,
-                'lng' => $lng + 0.01,
-            ],
-            [
-                'id' => 'PVZ2',
-                'name' => 'SDEK Тестовый пункт №2',
-                'address' => 'ул. Примерная, д. 5, Москва',
-                'hours' => 'пн-пт 9:00-18:00',
-                'lat' => $lat - 0.01,
-                'lng' => $lng + 0.005,
-            ],
-        ];
     }
 
     public function actionAdd()

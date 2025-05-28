@@ -12,5 +12,9 @@ return [
         'authManager' => [
             'class' => 'yii\rbac\DbManager',
         ],
+        'cdekService' => [
+            'class' => 'common\services\CdekService',
+            'isTestMode' => YII_ENV_DEV,
+        ],
     ],
 ];
