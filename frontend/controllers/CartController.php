@@ -24,6 +24,7 @@ class CartController extends Controller
     {
         parent::__construct($id, $module, $config);
         $this->pickUpPoints = Yii::$app->cdekService->getPickupPoints(165);
+        print_r(Yii::$app->cdekService->getTariffSumm()); die();
     }
 
     public function actionIndex()

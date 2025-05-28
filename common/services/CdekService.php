@@ -3,6 +3,7 @@
 namespace common\services;
 use AntistressStore\CdekSDK2\CdekClientV2;
 use AntistressStore\CdekSDK2\Entity\Requests\DeliveryPoints;
+use AntistressStore\CdekSDK2\Entity\Requests\Tariff;
 use Yii;
 
 class CdekService
@@ -72,5 +73,18 @@ class CdekService
                 'lng' => $lng + 0.005,
             ],
         ];
+    }
+
+    public function getTariffSumm ()
+    {
+        $tariff = (new Tariff())
+            ->setTariffCode(136) // Указывает код тарифа для расчета
+            ->setCityCodes(172, 44) // Экспресс-метод установки кодов отправителя и получателя
+            ->setPackageWeight(500)
+            ->addServices(['PART_DELIV'])
+        ;
+
+        $tariff_response = $this->client->calculateTariff($tariff); // TariffResponse
+        print_r($tariff_response->getDeliverySum()); die();
     }
 }

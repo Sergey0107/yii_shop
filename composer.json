@@ -20,8 +20,7 @@
         "yiisoft/yii2-symfonymailer": "~2.0.3",
       "ext-json": "*",
         "guzzlehttp/guzzle": "8.0.x-dev",
-        "antistress-store/cdek-sdk-v2": "dev-master",
-      "ext-cassandra": "*"
+        "antistress-store/cdek-sdk-v2": "dev-master"
     },
     "require-dev": {
         "yiisoft/yii2-debug": "~2.1.0",
