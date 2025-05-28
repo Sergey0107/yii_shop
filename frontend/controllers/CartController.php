@@ -10,7 +10,6 @@ use backend\models\OrderProducts;
 use Cassandra\Exception\ValidationException;
 use Throwable;
 use Yii;
-use yii\db\Exception;
 use yii\db\StaleObjectException;
 use yii\web\Controller;
 use yii\web\HttpException;
