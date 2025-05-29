@@ -7,9 +7,9 @@ use backend\models\Delivery;
 use backend\models\Order;
 use backend\models\Product;
 use backend\models\OrderProducts;
-use Cassandra\Exception\ValidationException;
 use Throwable;
 use Yii;
+use yii\db\Exception;
 use yii\db\StaleObjectException;
 use yii\web\Controller;
 use yii\web\HttpException;
@@ -24,7 +24,7 @@ class CartController extends Controller
     {
         parent::__construct($id, $module, $config);
         $this->pickUpPoints = Yii::$app->cdekService->getPickupPoints(165);
-        print_r(Yii::$app->cdekService->getTariffSumm()); die();
+        //print_r(Yii::$app->cdekService->getTariffSumm()); die();
     }
 
     public function actionIndex()
@@ -57,6 +57,7 @@ class CartController extends Controller
 
             $this->saveOrderProduct($orderProduct);
             $order->updateTotalPrice();
+            $product->reserveProductForOrder();
 
             return [
                 'success' => true,
@@ -163,8 +164,12 @@ class CartController extends Controller
 
         try {
             $orderProduct = $this->findOrderProduct();
+            $product = $orderProduct->product;
+            $count = $orderProduct->quantity;
             $this->deleteOrderProduct($orderProduct);
             $orderData = $this->getOrderData();
+
+            $product->returnProductToWarehouse($count);
 
             return [
                 'success' => true,
@@ -235,6 +240,7 @@ class CartController extends Controller
 
         $transaction = Yii::$app->db->beginTransaction();
         try {
+            $order->returnAllProductsInWarehouse();
             OrderProducts::deleteAll(['order_id' => $order->id]);
             if ($order->delete()) {
                 $transaction->commit();
@@ -256,6 +262,9 @@ class CartController extends Controller
         return $this->render('empty-cart');
     }
 
+    /**
+     * @throws Exception
+     */
     public function actionPlus($id)
     {
         Yii::$app->response->format = Response::FORMAT_JSON;
@@ -266,6 +275,7 @@ class CartController extends Controller
         }
 
         $orderProduct->quantity += 1;
+        $orderProduct->product->reserveProductForOrder();
         if ($orderProduct->save()) {
             $order = $orderProduct->order;
             $order->updateTotalPrice();
@@ -283,6 +293,9 @@ class CartController extends Controller
         return ['success' => false, 'message' => 'Ошибка сохранения'];
     }
 
+    /**
+     * @throws Exception
+     */
     public function actionMinus($id)
     {
         Yii::$app->response->format = Response::FORMAT_JSON;
@@ -295,8 +308,10 @@ class CartController extends Controller
         if ($orderProduct->quantity > 1) {
             $orderProduct->quantity -= 1;
             if ($orderProduct->save(false)) {
+
                 $order = $orderProduct->order;
                 $order->updateTotalPrice();
+                $orderProduct->product->returnProductToWarehouse();
 
                 return [
                     'success' => true,
@@ -332,11 +347,8 @@ class CartController extends Controller
             $this->processOrder($order);
 
             return ['success' => true, 'order_id' => $order->id];
-        } catch (ValidationException $e) {
-            return ['success' => false, 'message' => $e->getMessage()];
         } catch (\Exception $e) {
-            Yii::error('Order submit error: ' . $e->getMessage(), __METHOD__);
-            return ['success' => false, 'message' => 'Ошибка при оформлении заказа'];
+            return ['success' => false, 'message' => $e->getMessage()];
         }
     }
 

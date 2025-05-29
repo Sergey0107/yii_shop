@@ -4,6 +4,7 @@ namespace backend\models;
 
 use common\models\User;
 use Yii;
+use yii\db\Exception;
 
 /**
  * This is the model class for table "order".
@@ -150,5 +151,20 @@ class Order extends \yii\db\ActiveRecord
     public function getCountProducts(): int
     {
         return (int)$this->getOrderProducts()->sum('quantity');
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function returnAllProductsInWarehouse(): void
+    {
+        $orderProducts = OrderProducts::findAll(['order_id' => $this->id]);
+        if (!empty($orderProducts)) {
+            foreach ($orderProducts as $orderProduct) {
+                if ($orderProduct->product) {
+                    $orderProduct->product->returnProductToWarehouse($orderProduct->quantity);
+                }
+            }
+        }
     }
 }

@@ -2,6 +2,7 @@
 
 namespace backend\models;
 use Yii;
+use yii\db\Exception;
 use yii\web\UploadedFile;
 
 /**
@@ -204,6 +205,31 @@ class Product extends \yii\db\ActiveRecord
        }
 
        return true;
+    }
+
+    /**
+     * @throws Exception
+     * @throws \Exception
+     */
+    public function reserveProductForOrder()
+    {
+        $this->quantity -= 1;
+        if (!$this->save(false)) {
+            throw new \Exception('Ошибка при резервировании товара в заказ');
+        }
+    }
+
+    /**
+     * @throws Exception
+     * @throws \Exception
+     */
+    public function returnProductToWarehouse($count = null): void
+    {
+        $this->quantity += ($count ?? 1);
+        if (!$this->save(false)) {
+            throw new \Exception('Ошибка при возврате товара на склад');
+        }
+
     }
 
 }
