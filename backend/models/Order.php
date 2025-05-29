@@ -23,6 +23,7 @@ use yii\db\Exception;
  * @property string|null $phone
  * @property string|null $email
  * @property string|null $payment_method_id
+ * @property int $delivery_price
  *
  *
  * @property Delivery $delivery
@@ -80,7 +81,7 @@ class Order extends \yii\db\ActiveRecord
         return [
             [['delivery_id'], 'default', 'value' => 1],
             [['user_id', 'total_price', 'status'], 'required'],
-            [['user_id', 'total_price', 'status', 'delivery_id'], 'integer'],
+            [['user_id', 'total_price', 'status', 'delivery_id', 'delivery_price'], 'integer'],
             [['created_at'], 'safe'],
             [['status'], 'in', 'range' => array_keys(self::getStatusNames())],
             [['delivery_id'], 'exist', 'skipOnError' => true, 'targetClass' => Delivery::class, 'targetAttribute' => ['delivery_id' => 'id']],
@@ -101,6 +102,7 @@ class Order extends \yii\db\ActiveRecord
             'created_at' => 'Дата создания',
             'delivery_id' => 'Способ доставки',
             'statusName' => 'Статус заказа',
+            'delivery_price' => 'Стоимость доставки',
         ];
     }
 
@@ -145,6 +147,10 @@ class Order extends \yii\db\ActiveRecord
         }
 
         $this->total_price = $total;
+        if ($this->delivery_price > 0) {
+            $this->total_price += $this->delivery_price;
+        }
+
         $this->save(false);
     }
 

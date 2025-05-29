@@ -25,11 +25,11 @@ class CartController extends Controller
     {
         parent::__construct($id, $module, $config);
         $this->pickUpPoints = Yii::$app->cdekService->getPickupPoints(City::CODE_KOSTROMA_CDEK);
-        //print_r(Yii::$app->cdekService->getTariffSumm()); die();
     }
 
     public function actionIndex()
     {
+        $cities = City::find()->all();
         $order = $this->findDraftOrder();
         if (!$order) {
             return $this->render('empty-cart');
@@ -44,6 +44,7 @@ class CartController extends Controller
             'order' => $order,
             'orderProducts' => $orderProducts,
             'pickupPoints' => $this->pickUpPoints,
+            'cities' => $cities,
         ]);
     }
 
@@ -346,6 +347,7 @@ class CartController extends Controller
 
             $order = $this->updateOrder($post);
             $this->processOrder($order);
+            $order->updateTotalPrice();
 
             return ['success' => true, 'order_id' => $order->id];
         } catch (\Exception $e) {
@@ -364,7 +366,7 @@ class CartController extends Controller
 
     private function validateRequiredFields(array $post): void
     {
-        $required = ['phone', 'email', 'delivery_id', 'payment_method'];
+        $required = ['phone', 'email', 'delivery_id', 'payment_method', 'delivery_price'];
         foreach ($required as $field) {
             if (empty($post[$field])) {
                 throw new \Exception('Ошибка при оформлении заказа');
@@ -408,6 +410,7 @@ class CartController extends Controller
             'comment' => $data['comment'] ?? null,
             'email' => $data['email'],
             'phone' => $data['phone'],
+            'delivery_price' => $data['delivery_price'],
             'status' => Order::STATUS_CREATED
         ]);
 
@@ -431,8 +434,19 @@ class CartController extends Controller
         $order = $this->findDraftOrder();
         $weight = $order->getCommonWeight();
         $city = $post['city_code'] ?? null;
-        print_r(Yii::$app->cdekService->getTariffSumm($weight, $city)); die();
 
+        return $this->asJson([
+            'success' => true,
+            'delivery_cost' => Yii::$app->cdekService->getTariffSumm($weight, $city),
+            'message' => 'Стоимость доставки рассчитана'
+        ]);
+    }
+
+    public function actionGetPickupPoints($cityCode)
+    {
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        $city = City::findOne(['city_code' => $cityCode]);
+        return $city->getPickupPoints();
 
     }
 

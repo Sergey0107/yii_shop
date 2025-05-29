@@ -47,4 +47,9 @@ class City extends \yii\db\ActiveRecord
         ];
     }
 
+    public function getPickupPoints()
+    {
+        return Yii::$app->cdekService->getPickupPoints($this->city_code);
+    }
+
 }

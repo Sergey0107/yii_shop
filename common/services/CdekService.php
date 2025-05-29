@@ -86,6 +86,6 @@ class CdekService
         ;
 
         $tariff_response = $this->client->calculateTariff($tariff); // TariffResponse
-        print_r($tariff_response->getDeliverySum()); die();
+        return $tariff_response->getDeliverySum();
     }
 }

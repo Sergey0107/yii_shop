@@ -2,6 +2,7 @@
 /** @var yii\web\View $this */
 /** @var backend\models\Order $order */
 /** @var backend\models\OrderProducts[] $orderProducts */
+/** @var backend\models\City[] $cities */
 /** @var array $pickupPoints */
 
 use frontend\assets\CartAsset;
@@ -82,16 +83,22 @@ $this->title = 'Корзина';
                         <div class="summary-details">
                             <div class="summary-row">
                                 <span>Товары (<?= ($order->getCountProducts()) ?>)</span>
-                                <span><?= Yii::$app->formatter->asDecimal($order->total_price) ?> ₽</span>
+                                <span><?= Yii::$app->formatter->asInteger($order->total_price) ?> ₽</span>
                             </div>
                             <div class="summary-row-delivery">
                                 <span>Доставка</span>
-                                <span class="delivery-price">Бесплатно</span>
+                                <span class="delivery-price" data-delivery-cost="<?= $order->delivery_price ?>">
+                                    <?php if ($order->delivery_price > 0): ?>
+                                        <?= Yii::$app->formatter->asInteger($order->delivery_price) ?> ₽
+                                    <?php else: ?>
+                                        Бесплатно
+                                    <?php endif; ?>
+                                </span>
                             </div>
                             <div class="summary-divider"></div>
                             <div class="summary-row total">
                                 <span>К оплате</span>
-                                <span><?= Yii::$app->formatter->asDecimal($order->total_price) ?> ₽</span>
+                                <span><?= Yii::$app->formatter->asInteger($order->total_price) ?> ₽</span>
                             </div>
                         </div>
                         <div class="delivery-method">
@@ -120,6 +127,14 @@ $this->title = 'Корзина';
                         </div>
                         <div class="pickup-section">
                             <h4>Пункт выдачи</h4>
+                            <div class="form-group">
+                                <select id="city-select" class="form-select">
+                                    <option value="">Выберите город</option>
+                                    <?php foreach ($cities as $city): ?>
+                                        <option value="<?= $city->city_code ?>"><?= Html::encode($city->name) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
                             <div class="map-container" id="pickupMap" data-points='<?= json_encode($pickupPoints) ?>'>
                                 <div class="map-placeholder">
                                     <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -585,5 +600,30 @@ $this->title = 'Корзина';
             width: calc(100% - 20px);
             bottom: 10px;
         }
+    }
+
+    .city-select-container {
+        margin-bottom: 15px;
+    }
+
+    .form-select {
+        display: block;
+        width: 100%;
+        padding: 10px 15px;
+        font-size: 16px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background-color: #fff;
+        appearance: none;
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 15px center;
+        background-size: 16px;
+    }
+
+    .form-select:focus {
+        outline: none;
+        border-color: #4f46e5;
+        box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
     }
 </style>
