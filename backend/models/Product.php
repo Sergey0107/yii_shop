@@ -23,6 +23,7 @@ use yii\web\UploadedFile;
  * @property bool $is_new
  * @property bool $is_popular
  * @property int $old_price
+ * @property int $weight
  *
  * @property Color $color
  * @property Country $country
@@ -53,7 +54,7 @@ class Product extends \yii\db\ActiveRecord
         return [
             [['description', 'img'], 'default', 'value' => null],
             [['is_active', 'is_new', 'is_popular'], 'default', 'value' => 0],
-            [['name', 'price', 'size_id', 'type_id', 'country_id', 'color_id', 'material_id'], 'required'],
+            [['name', 'price', 'size_id', 'weight', 'type_id', 'country_id', 'color_id', 'material_id'], 'required'],
             [['price', 'quantity', 'is_active', 'size_id', 'type_id', 'country_id', 'color_id', 'material_id', 'is_new', 'is_popular', 'old_price'], 'integer'],
             [['name', 'description', 'img'], 'string', 'max' => 255],
             [['name'], 'unique'],
@@ -110,7 +111,8 @@ class Product extends \yii\db\ActiveRecord
             'material_id' => 'Материал',
             'is_new' => 'Новинка',
             'is_popular' => 'Популярный',
-            'old_price' => 'Цена до скидки'
+            'old_price' => 'Цена до скидки',
+            'weight' => 'Вес, кг'
         ];
     }
 

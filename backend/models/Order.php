@@ -167,4 +167,16 @@ class Order extends \yii\db\ActiveRecord
             }
         }
     }
+
+    public function getCommonWeight(): int
+    {
+        $orderProducts = OrderProducts::findAll(['order_id' => $this->id]);
+        $weight = 0;
+        foreach ($orderProducts as $orderProduct) {
+            if ($orderProduct->product) {
+                $weight += $orderProduct->product->weight;
+            }
+        }
+        return $weight;
+    }
 }

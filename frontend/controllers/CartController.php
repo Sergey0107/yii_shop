@@ -3,6 +3,7 @@
 namespace frontend\controllers;
 
 use AntistressStore\CdekSDK2\Entity\Requests\DeliveryPoints;
+use backend\models\City;
 use backend\models\Delivery;
 use backend\models\Order;
 use backend\models\Product;
@@ -23,7 +24,7 @@ class CartController extends Controller
     public function __construct($id, $module, $config = [])
     {
         parent::__construct($id, $module, $config);
-        $this->pickUpPoints = Yii::$app->cdekService->getPickupPoints(165);
+        $this->pickUpPoints = Yii::$app->cdekService->getPickupPoints(City::CODE_KOSTROMA_CDEK);
         //print_r(Yii::$app->cdekService->getTariffSumm()); die();
     }
 
@@ -418,6 +419,21 @@ class CartController extends Controller
         if (!$order->save()) {
             throw new \RuntimeException('Не удалось сохранить заказ: ' . json_encode($order->getErrors()));
         }
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function actionGetDeliveryCost()
+    {
+        Yii::$app->response->format = Response::FORMAT_JSON;
+        $post = $this->validateRequest();
+        $order = $this->findDraftOrder();
+        $weight = $order->getCommonWeight();
+        $city = $post['city_code'] ?? null;
+        print_r(Yii::$app->cdekService->getTariffSumm($weight, $city)); die();
+
+
     }
 
 }

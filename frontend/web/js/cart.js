@@ -391,3 +391,60 @@ function validateCourierFields() {
     }
     return true;
 }
+
+document.querySelectorAll('.js-pickup-point').forEach(item => {
+    item.addEventListener('click', function(event) {
+        // Проверяем, был ли клик именно по блоку, а не по вложенным элементам
+        if (event.target !== this &&
+            !event.target.matches('input[type="radio"]') &&
+            !event.target.matches('label')) {
+            return;
+        }
+
+        // Остальной код без изменений
+        const radio = this.querySelector('input[type="radio"]');
+        radio.checked = true;
+
+        const pointData = {
+            id: this.dataset.id,
+            lat: this.dataset.lat,
+            lng: this.dataset.lng,
+            name: this.dataset.name,
+            address: this.dataset.address,
+            hours: this.dataset.hours,
+        };
+
+        sendPickupPointSelection(pointData);
+    });
+});
+
+function sendPickupPointSelection(pointData) {
+    const formData = new FormData();
+
+    formData.append('pickup_point_id', pointData.id);
+    formData.append('name', pointData.name);
+    formData.append('address', pointData.address);
+    formData.append('hours', pointData.hours);
+
+    // Отправка на сервер
+    fetch('/cart/get-delivery-cost', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+        }
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.href = '/cart/success-order';
+            } else {
+                showNotification('error', data.message || 'Ошибка при выборе пункта');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('error', 'Ошибка соединения с сервером');
+        })
+}

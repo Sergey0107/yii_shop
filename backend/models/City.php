@@ -14,6 +14,7 @@ use Yii;
 class City extends \yii\db\ActiveRecord
 {
 
+    const CODE_KOSTROMA_CDEK = 165;          // Кострома для сдека
 
     /**
      * {@inheritdoc}

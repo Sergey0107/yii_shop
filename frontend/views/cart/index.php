@@ -131,7 +131,14 @@ $this->title = 'Корзина';
                             </div>
                             <div class="points-list-container">
                                 <?php foreach ($pickupPoints as $point): ?>
-                                    <div class="point-item" data-lat="<?= $point['lat'] ?>" data-lng="<?= $point['lng'] ?>">
+                                    <div id="pickupPoint"
+                                         class="point-item js-pickup-point"
+                                         data-lat="<?= $point['lat'] ?>"
+                                         data-lng="<?= $point['lng'] ?>"
+                                         data-id="<?= $point['id'] ?>"
+                                         data-name="<?= Html::encode($point['name']) ?>"
+                                         data-address="<?= Html::encode($point['address']) ?>"
+                                         data-hours="<?= Html::encode($point['hours']) ?>">
                                         <input type="radio" name="pickup_point" id="point-<?= $point['id'] ?>" value="<?= $point['id'] ?>">
                                         <label for="point-<?= $point['id'] ?>">
                                             <strong><?= Html::encode($point['name']) ?></strong>

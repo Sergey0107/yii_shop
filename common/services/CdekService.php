@@ -4,6 +4,7 @@ namespace common\services;
 use AntistressStore\CdekSDK2\CdekClientV2;
 use AntistressStore\CdekSDK2\Entity\Requests\DeliveryPoints;
 use AntistressStore\CdekSDK2\Entity\Requests\Tariff;
+use backend\models\City;
 use Yii;
 
 class CdekService
@@ -75,12 +76,12 @@ class CdekService
         ];
     }
 
-    public function getTariffSumm ()
+    public function getTariffSumm ($weight, $destination = null)
     {
         $tariff = (new Tariff())
-            ->setTariffCode(136) // Указывает код тарифа для расчета
-            ->setCityCodes(172, 44) // Экспресс-метод установки кодов отправителя и получателя
-            ->setPackageWeight(500)
+            ->setTariffCode(138) // пока что чекаю только 136 (посылка дверь-склад)
+            ->setCityCodes(City::CODE_KOSTROMA_CDEK, $destination ?? City::CODE_KOSTROMA_CDEK)
+            ->setPackageWeight($weight)
             ->addServices(['PART_DELIV'])
         ;
 

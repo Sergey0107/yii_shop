@@ -56,6 +56,8 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'is_active')->textInput() ?>
 
+    <?= $form->field($model, 'weight')->textInput() ?>
+
     <?= $form->field($model, 'size_id')->dropDownList(
         $sizes,
         ['prompt' => 'Выберите размер']

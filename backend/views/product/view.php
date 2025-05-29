@@ -48,6 +48,7 @@ $this->params['breadcrumbs'][] = $this->title;
             'price',
             'old_price',
             'quantity',
+            'weight',
             [
                 'attribute' => 'is_active',
                 'value' => function ($model) {
