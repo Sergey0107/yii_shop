@@ -391,7 +391,7 @@ AppAsset::register($this);
                                     <span class="fs-xs mt-1 text-muted"><?= $user->username?></span>
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="userDropdown">
-                                    <li><a class="dropdown-item" href="<?= Yii::$app->urlManager->createUrl(['site/index']) ?>"><i class="fas fa-box me-2"></i>Заказы</a></li>
+                                    <li><a class="dropdown-item" href="<?= Yii::$app->urlManager->createUrl(['account/index']) ?>"><i class="fas fa-box me-2"></i>Заказы</a></li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li>
                                         <?= Html::beginForm(['/site/logout'], 'post', ['class' => 'd-inline']) ?>
