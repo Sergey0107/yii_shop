@@ -104,4 +104,60 @@ class CatalogController extends Controller
         return $this->render('card', ['product' => $product]);
     }
 
+    public function actionNew()
+    {
+        $searchText = Yii::$app->request->get('text');
+        $sort = Yii::$app->request->get('sort', 'popular');
+
+        $products = Product::find()->where(['is_new' => 1])->all();
+        return $this->render('new', [
+            'products' => $products,
+            'sort' => $sort, // Pass the sort parameter to the view
+            'colors' => \backend\models\Color::find()->select(['id', 'name'])->asArray()->all(),
+            'countries' => \backend\models\Country::find()->select(['id', 'name'])->asArray()->all(),
+            'materials' => \backend\models\Material::find()->select(['id', 'name'])->asArray()->all(),
+            'types' => \backend\models\Type::find()->select(['id', 'name'])->asArray()->all(),
+            'sizes' => \backend\models\Size::find()->select(['id', 'value'])->asArray()->all(),
+            'minProductPrice' => \backend\models\Product::find()->min('price') ?: 0,
+            'maxProductPrice' => \backend\models\Product::find()->max('price') ?: 100000,
+            'properties' => \backend\models\Property::find()->with('values')->all(),
+            'selectedTypes' => $queryParams['type'] ?? [],
+            'selectedColors' => $queryParams['color'] ?? [],
+            'selectedSizes' => $queryParams['size'] ?? [],
+            'selectedPriceMin' => $queryParams['min_price'] ?? (\backend\models\Product::find()->min('price') ?: 0),
+            'selectedPriceMax' => $queryParams['max_price'] ?? (\backend\models\Product::find()->max('price') ?: 100000),
+            'selectedMaterials' => $queryParams['material'] ?? [],
+            'selectedCountries' => $queryParams['country'] ?? [],
+            'selectedProperties' => $queryParams['properties'] ?? [],
+        ]);
+    }
+
+    public function actionHits()
+    {
+        $searchText = Yii::$app->request->get('text');
+        $sort = Yii::$app->request->get('sort', 'popular');
+
+        $products = Product::find()->where(['is_popular' => 1])->all();
+        return $this->render('hits', [
+            'products' => $products,
+            'sort' => $sort, // Pass the sort parameter to the view
+            'colors' => \backend\models\Color::find()->select(['id', 'name'])->asArray()->all(),
+            'countries' => \backend\models\Country::find()->select(['id', 'name'])->asArray()->all(),
+            'materials' => \backend\models\Material::find()->select(['id', 'name'])->asArray()->all(),
+            'types' => \backend\models\Type::find()->select(['id', 'name'])->asArray()->all(),
+            'sizes' => \backend\models\Size::find()->select(['id', 'value'])->asArray()->all(),
+            'minProductPrice' => \backend\models\Product::find()->min('price') ?: 0,
+            'maxProductPrice' => \backend\models\Product::find()->max('price') ?: 100000,
+            'properties' => \backend\models\Property::find()->with('values')->all(),
+            'selectedTypes' => $queryParams['type'] ?? [],
+            'selectedColors' => $queryParams['color'] ?? [],
+            'selectedSizes' => $queryParams['size'] ?? [],
+            'selectedPriceMin' => $queryParams['min_price'] ?? (\backend\models\Product::find()->min('price') ?: 0),
+            'selectedPriceMax' => $queryParams['max_price'] ?? (\backend\models\Product::find()->max('price') ?: 100000),
+            'selectedMaterials' => $queryParams['material'] ?? [],
+            'selectedCountries' => $queryParams['country'] ?? [],
+            'selectedProperties' => $queryParams['properties'] ?? [],
+        ]);
+    }
+
 }

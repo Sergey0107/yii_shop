@@ -461,7 +461,7 @@ AppAsset::register($this);
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link px-3 py-2 rounded-pill d-flex align-items-center" href="<?= Yii::$app->urlManager->createUrl(['catalog/sale']) ?>">
+                            <a class="nav-link px-3 py-2 rounded-pill d-flex align-items-center" href="<?= Yii::$app->urlManager->createUrl(['catalog/hits']) ?>">
                                 <i class="fas fa-percentage me-2"></i> Хиты
                             </a>
                         </li>
