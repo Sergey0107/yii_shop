@@ -79,6 +79,49 @@ $backendUploads = BackendAsset::register($this);
         transform: scale(1.05);
     }
 
+    .product-badge {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: white;
+        z-index: 2;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .remove-wishlist-btn {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        width: 36px;
+        height: 36px;
+        background: rgba(239, 68, 68, 0.9);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        transition: all 0.3s ease;
+        z-index: 2;
+        opacity: 0;
+    }
+
+    .product-card:hover .remove-wishlist-btn {
+        opacity: 1;
+    }
+
+    .remove-wishlist-btn:hover {
+        background: #dc2626;
+        transform: scale(1.1);
+    }
+
     .product-info {
         padding: 24px;
     }
@@ -95,6 +138,24 @@ $backendUploads = BackendAsset::register($this);
         overflow: hidden;
     }
 
+    .product-price {
+        margin: 16px 0;
+    }
+
+    .current-price {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1e40af;
+        margin-right: 12px;
+    }
+
+    .old-price {
+        font-size: 1.1rem;
+        color: #64748b;
+        text-decoration: line-through;
+        font-weight: 400;
+    }
+
     .product-availability {
         display: inline-flex;
         align-items: center;
@@ -103,6 +164,7 @@ $backendUploads = BackendAsset::register($this);
         font-size: 0.875rem;
         font-weight: 500;
         letter-spacing: 0.025em;
+        margin-bottom: 20px;
     }
 
     .availability-in-stock {
@@ -130,6 +192,60 @@ $backendUploads = BackendAsset::register($this);
 
     .icon-out-of-stock {
         background: #dc2626;
+    }
+
+    .product-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 20px;
+    }
+
+    .add-to-cart-btn {
+        flex: 1;
+        padding: 12px 20px;
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-weight: 500;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .add-to-cart-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+    }
+
+    .add-to-cart-btn:disabled {
+        background: #94a3b8;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+    .remove-from-wishlist-btn {
+        padding: 12px;
+        background: rgba(239, 68, 68, 0.1);
+        color: #dc2626;
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+    }
+
+    .remove-from-wishlist-btn:hover {
+        background: rgba(239, 68, 68, 0.2);
+        transform: translateY(-2px);
     }
 
     .empty-wishlist {
@@ -206,6 +322,14 @@ $backendUploads = BackendAsset::register($this);
         .product-info {
             padding: 20px;
         }
+
+        .current-price {
+            font-size: 1.3rem;
+        }
+
+        .product-actions {
+            flex-direction: column;
+        }
     }
 
     @media (max-width: 480px) {
@@ -213,6 +337,10 @@ $backendUploads = BackendAsset::register($this);
             grid-template-columns: 1fr;
             gap: 16px;
         }
+    }
+
+    :root {
+        --danger: #ef4444;
     }
 </style>
 
@@ -238,6 +366,15 @@ $backendUploads = BackendAsset::register($this);
             <?php foreach ($products as $product): ?>
                 <div class="product-card">
                     <a href="<?= Url::to(['catalog/card', 'id' => $product->id]) ?>" class="product-image">
+                        <?php if ($product->old_price): ?>
+                            <?php $discount = 100 - (ceil($product->price * 100 / $product->old_price)); ?>
+                            <span class="product-badge" style="background-color: var(--danger);">Скидка <?= $discount ?>%</span>
+                        <?php endif; ?>
+
+                        <button class="remove-wishlist-btn" onclick="removeFromWishlist(<?= $product->id ?>); event.preventDefault();" title="Удалить из избранного">
+                            ×
+                        </button>
+
                         <?php if ($product->img): ?>
                             <img src="<?= $backendUploads->baseUrl ?>/product/<?= $product->img ?>" alt="<?= Html::encode($product->name) ?>" loading="lazy">
                         <?php else: ?>
@@ -252,9 +389,30 @@ $backendUploads = BackendAsset::register($this);
                             </a>
                         </h3>
 
+                        <div class="product-price">
+                            <span class="current-price"><?= number_format($product->price, 0, ',', ' ') ?> ₽</span>
+                            <?php if ($product->old_price): ?>
+                                <span class="old-price"><?= number_format($product->old_price, 0, ',', ' ') ?> ₽</span>
+                            <?php endif; ?>
+                        </div>
+
                         <div class="product-availability <?= $product->quantity > 0 ? 'availability-in-stock' : 'availability-out-of-stock' ?>">
                             <span class="availability-icon <?= $product->quantity > 0 ? 'icon-in-stock' : 'icon-out-of-stock' ?>"></span>
                             <?= $product->quantity > 0 ? 'В наличии' : 'Нет в наличии' ?>
+                        </div>
+
+                        <div class="product-actions">
+                            <button class="add-to-cart-btn"
+                                    onclick="addToCart(<?= $product->id ?>)"
+                                <?= $product->quantity <= 0 ? 'disabled' : '' ?>>
+                                <span>🛒</span>
+                                <?= $product->quantity > 0 ? 'В корзину' : 'Нет в наличии' ?>
+                            </button>
+                            <button class="remove-from-wishlist-btn"
+                                    onclick="removeFromWishlist(<?= $product->id ?>)"
+                                    title="Удалить из избранного">
+                                ♡
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -262,3 +420,99 @@ $backendUploads = BackendAsset::register($this);
         </div>
     <?php endif; ?>
 </div>
+
+<script>
+    function addToCart(productId) {
+        // AJAX запрос для добавления товара в корзину
+        fetch('<?= Url::to(['cart/add']) ?>', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: 'product_id=' + productId
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Показать уведомление об успешном добавлении
+                    showNotification('Товар добавлен в корзину', 'success');
+                } else {
+                    showNotification('Ошибка при добавлении товара', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Произошла ошибка', 'error');
+            });
+    }
+
+    function removeFromWishlist(productId) {
+        if (confirm('Удалить товар из избранного?')) {
+            // AJAX запрос для удаления товара из избранного
+            fetch('<?= Url::to(['wishlist/remove']) ?>', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: 'product_id=' + productId
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Удалить карточку товара из DOM с анимацией
+                        const productCard = event.target.closest('.product-card');
+                        productCard.style.transform = 'scale(0)';
+                        productCard.style.opacity = '0';
+                        setTimeout(() => {
+                            productCard.remove();
+                            // Проверить, остались ли товары
+                            const remainingCards = document.querySelectorAll('.product-card');
+                            if (remainingCards.length === 0) {
+                                location.reload(); // Перезагрузить страницу для показа пустого состояния
+                            }
+                        }, 300);
+                        showNotification('Товар удален из избранного', 'success');
+                    } else {
+                        showNotification('Ошибка при удалении товара', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showNotification('Произошла ошибка', 'error');
+                });
+        }
+    }
+
+    function showNotification(message, type) {
+        // Создать и показать уведомление
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 12px 20px;
+        border-radius: 8px;
+        color: white;
+        font-weight: 500;
+        z-index: 1000;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+        ${type === 'success' ? 'background: #059669;' : 'background: #dc2626;'}
+    `;
+        notification.textContent = message;
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            notification.style.transform = 'translateX(0)';
+        }, 100);
+
+        setTimeout(() => {
+            notification.style.transform = 'translateX(100%)';
+            setTimeout(() => {
+                document.body.removeChild(notification);
+            }, 300);
+        }, 3000);
+    }
+</script>
