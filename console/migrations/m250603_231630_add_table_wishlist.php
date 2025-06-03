@@ -20,19 +20,4 @@ class m250603_231630_add_table_wishlist extends Migration
     {
        $this->dropTable('wishlist');
     }
-
-    /*
-    // Use up()/down() to run migration code without a transaction.
-    public function up()
-    {
-
-    }
-
-    public function down()
-    {
-        echo "m250603_231630_add_table_wishlist cannot be reverted.\n";
-
-        return false;
-    }
-    */
 }
