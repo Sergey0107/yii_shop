@@ -1,3 +1,8 @@
+<?php
+
+use yii\helpers\Url;
+
+?>
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -341,7 +346,7 @@
 
 <script>
     function goToOrders() {
-        alert('Переход к управлению заказами');
+        window.location.href = '<?= Url::to(['order/index']) ?>';
     }
 
     function goToStats() {

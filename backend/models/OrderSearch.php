@@ -18,7 +18,7 @@ class OrderSearch extends Order
     {
         return [
             [['id', 'user_id', 'total_price', 'status', 'delivery_id'], 'integer'],
-            [['created_at', 'delivery_address'], 'safe'],
+            [['created_at'], 'safe'],
         ];
     }
 
@@ -67,7 +67,7 @@ class OrderSearch extends Order
             'delivery_id' => $this->delivery_id,
         ]);
 
-        $query->andFilterWhere(['like', 'delivery_address', $this->delivery_address]);
+        //$query->andFilterWhere(['like', 'delivery_address', $this->delivery_address]);
 
         return $dataProvider;
     }
