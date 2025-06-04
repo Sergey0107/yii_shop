@@ -97,8 +97,8 @@ class AccountController extends Controller
             'success' => true,
             'order' => [
                 'id' => $order->id,
-                'payment_method' => 'Оплата при получении',
-                'delivery_method' => 'СДЭК',
+                'payment_method' => $paymentMethods[$order->payment_method_id] ?? $order->payment_method_id ?? 'Не указан',
+                'delivery_method' => $deliveryMethods[$order->delivery_id] ?? $order->delivery_id ?? 'Не указан',
                 'total_price' => $order->total_price,
                 'delivery_price' => $order->delivery_price,
                 'status' => $order->getStatusName(),
