@@ -466,7 +466,7 @@ AppAsset::register($this);
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link px-3 py-2 rounded-pill d-flex align-items-center" href="<?= Yii::$app->urlManager->createUrl(['catalog/brands']) ?>">
+                            <a class="nav-link px-3 py-2 rounded-pill d-flex align-items-center" href="<?= Yii::$app->urlManager->createUrl(['articles/index']) ?>">
                                 <i class="fas fa-copyright me-2"></i> Статьи
                             </a>
                         </li>

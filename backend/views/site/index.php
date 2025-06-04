@@ -350,7 +350,7 @@ use yii\helpers\Url;
     }
 
     function goToStats() {
-        alert('Переход к статистике и аналитике');
+        window.location.href = '<?= Url::to(['statistic/index']) ?>';
     }
 
     // Улучшенная интерактивность
