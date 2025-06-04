@@ -223,11 +223,6 @@
                     <div class="value">₽1,901</div>
                     <div class="change negative">-2.1% к вчера</div>
                 </div>
-                <div class="stat-card">
-                    <h3>Конверсия</h3>
-                    <div class="value">3.2%</div>
-                    <div class="change positive">+0.3% к вчера</div>
-                </div>
             </div>
 
             <div class="chart-container">
@@ -361,14 +356,14 @@
             data: {
                 labels: ['1', '3', '5', '7', '9', '11', '13', '15', '17', '19', '21', '23', '25', '27', '29'],
                 datasets: [{
-                    label: 'Заказы',
+                    label: 'Оформлено',
                     data: [12, 19, 15, 25, 22, 30, 28, 35, 32, 40, 38, 45, 42, 48, 47],
                     borderColor: '#60a5fa',
                     backgroundColor: 'rgba(96, 165, 250, 0.1)',
                     tension: 0.4,
                     fill: true
                 }, {
-                    label: 'Выручка (тыс. ₽)',
+                    label: 'Добавлено в корзину',
                     data: [22, 35, 28, 45, 40, 55, 52, 65, 60, 75, 70, 85, 80, 92, 89],
                     borderColor: '#34d399',
                     backgroundColor: 'rgba(52, 211, 153, 0.1)',

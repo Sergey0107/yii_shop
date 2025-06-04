@@ -159,6 +159,12 @@ class Order extends \yii\db\ActiveRecord
         return (int)$this->getOrderProducts()->sum('quantity');
     }
 
+    public function getProducts()
+    {
+        return $this->hasMany(Product::class, ['id' => 'product_id'])
+            ->viaTable('order_products', ['order_id' => 'id']);
+    }
+
     /**
      * @throws Exception
      */

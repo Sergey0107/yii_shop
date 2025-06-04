@@ -21,9 +21,9 @@ class CdekService
     public function getPickupPoints(int $cityCode): array
     {
 
-//        if ($this->isTestMode) {
-//            return $this->getTestPoints(55.7558, 37.6173);
-//        }
+        if ($this->isTestMode) {
+            return $this->getTestPoints(55.7558, 37.6173);
+        }
 
         try {
             $request = (new DeliveryPoints())
@@ -79,13 +79,13 @@ class CdekService
     public function getTariffSumm ($weight, $destination = null)
     {
         $tariff = (new Tariff())
-            ->setTariffCode(138) // пока что чекаю только 136 (посылка дверь-склад)
+            ->setTariffCode(138)
             ->setCityCodes(City::CODE_KOSTROMA_CDEK, $destination ?? City::CODE_KOSTROMA_CDEK)
             ->setPackageWeight($weight)
             ->addServices(['PART_DELIV'])
         ;
 
-        $tariff_response = $this->client->calculateTariff($tariff); // TariffResponse
+        $tariff_response = $this->client->calculateTariff($tariff);
         return $tariff_response->getDeliverySum();
     }
 }

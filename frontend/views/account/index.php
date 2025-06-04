@@ -1,5 +1,15 @@
 <?php
 /** @var backend\models\Order[] $orders */
+
+use frontend\assets\BackendAsset;
+use yii\helpers\Html;
+use yii\helpers\Url;
+
+$backendUploads = BackendAsset::register($this);
+
+/** @var \yii\web\View $this */
+
+$this->title = "Мои заказы";
 ?>
 <div class="orders-container">
     <!-- Левая колонка - список заказов -->
@@ -19,23 +29,23 @@
 
         <?php if ($orders) { ?>
             <div id="orders-list">
-            <?php foreach ($orders as $order) {?>
-                <div class="order-item" onclick="selectOrder(<?= $order->id ?>)">
-                    <div class="order-header">
-                        <div class="order-number">Заказ #<?= $order->id ?></div>
-                        <div class="order-date"><?= $order->created_at ?></div>
+                <?php foreach ($orders as $order) {?>
+                    <div class="order-item" onclick="selectOrder(<?= $order->id ?>)">
+                        <div class="order-header">
+                            <div class="order-number">Заказ #<?= $order->id ?></div>
+                            <div class="order-date"><?= $order->created_at ?></div>
+                        </div>
+                        <div class="order-status status-delivered">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <?= $order->getStatusName() ?>
+                        </div>
+                        <div class="order-price"><?= $order->total_price ?> ₽</div>
+                        <div class="delivery-price">Доставка: <?= $order->delivery_price > 0 ? ($order->delivery_price . ' ₽') : 'Бесплатно'?></div>
                     </div>
-                    <div class="order-status status-delivered">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                            <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                        <?= $order->getStatusName() ?>
-                    </div>
-                    <div class="order-price"><?= $order->total_price ?> ₽</div>
-                    <div class="delivery-price">Доставка: <?= $order->delivery_price > 0 ? ($order->delivery_price . ' ₽') : 'Бесплатно'?></div>
-                </div>
-            <?php } ?>
-        </div>
+                <?php } ?>
+            </div>
         <?php } ?>
     </div>
 
@@ -50,7 +60,7 @@
 
         <div id="order-details" class="order-details" style="display: none;">
             <div class="order-details-header">
-                <div class="order-details-title">Заказ #<span id="selected-order-number">1001</span></div>
+                <div class="order-details-title">Заказ #<span id="selected-order-number"></span></div>
                 <div class="order-meta">
                     <div class="meta-item">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
@@ -58,7 +68,7 @@
                         </svg>
                         <div>
                             <div style="font-weight: 600;">Способ оплаты</div>
-                            <div id="payment-method">Наличными при получении</div>
+                            <div id="payment-method">Наличными</div>
                         </div>
                     </div>
                     <div class="meta-item">
@@ -67,7 +77,7 @@
                         </svg>
                         <div>
                             <div style="font-weight: 600;">Способ доставки</div>
-                            <div id="delivery-method">Самовывоз</div>
+                            <div id="delivery-method"></div>
                         </div>
                     </div>
                 </div>
@@ -82,28 +92,14 @@
                 </h3>
 
                 <div id="products-list">
-                    <!-- Пример товаров -->
-                    <div class="product-card">
-                        <div class="product-image">
-                            <img src="https://via.placeholder.com/80x80/667eea/ffffff?text=Product" alt="Товар">
-                        </div>
-                        <div class="product-info">
-                            <div class="product-title">Смартфон Apple iPhone 15 Pro Max</div>
-                            <div class="product-price">89 990 ₽</div>
-                            <div class="product-quantity">Количество: 1 шт.</div>
-                        </div>
-                    </div>
+                    <!-- Товары будут загружены через AJAX -->
+                </div>
 
-                    <div class="product-card">
-                        <div class="product-image">
-                            <img src="https://via.placeholder.com/80x80/764ba2/ffffff?text=Product" alt="Товар">
-                        </div>
-                        <div class="product-info">
-                            <div class="product-title">Наушники AirPods Pro 2nd Gen</div>
-                            <div class="product-price">24 990 ₽</div>
-                            <div class="product-quantity">Количество: 2 шт.</div>
-                        </div>
-                    </div>
+                <div id="products-loading" style="display: none; text-align: center; padding: 2rem;">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2V6M12 18V22M4.93 4.93L7.76 7.76M16.24 16.24L19.07 19.07M2 12H6M18 12H22M4.93 19.07L7.76 16.24M16.24 7.76L19.07 4.93" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <p>Загрузка товаров...</p>
                 </div>
             </div>
         </div>
@@ -124,27 +120,73 @@
         document.getElementById('order-details-placeholder').style.display = 'none';
         document.getElementById('order-details').style.display = 'block';
 
-        // Здесь будет AJAX запрос для загрузки деталей заказа
+        // Загружаем детали заказа через AJAX
         loadOrderDetails(orderId);
     }
 
     function loadOrderDetails(orderId) {
-        // Имитация загрузки данных
-        // В реальном приложении здесь будет AJAX запрос
+        // Показываем индикатор загрузки
+        document.getElementById('products-loading').style.display = 'block';
+        document.getElementById('products-list').innerHTML = '';
 
-        document.getElementById('selected-order-number').textContent = orderId === 1 ? '1001' : orderId === 2 ? '1002' : '1003';
+        // Обновляем номер заказа
+        document.getElementById('selected-order-number').textContent = orderId;
 
-        // Обновляем информацию в зависимости от заказа
-        if (orderId === 1) {
-            document.getElementById('payment-method').textContent = 'Наличными при получении';
-            document.getElementById('delivery-method').textContent = 'Самовывоз';
-        } else if (orderId === 2) {
-            document.getElementById('payment-method').textContent = 'Картой Сбербанка';
-            document.getElementById('delivery-method').textContent = 'Курьером';
-        } else {
-            document.getElementById('payment-method').textContent = 'Наличными при получении';
-            document.getElementById('delivery-method').textContent = 'Самовывоз';
-        }
+        // AJAX запрос для загрузки деталей заказа
+        fetch('<?= Url::to(['account/get-order-details']) ?>', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: 'order_id=' + orderId
+        })
+            .then(response => response.json())
+            .then(data => {
+                // Скрываем индикатор загрузки
+                document.getElementById('products-loading').style.display = 'none';
+
+                if (data.success) {
+                    // Обновляем информацию о заказе
+                    document.getElementById('payment-method').textContent = data.order.payment_method || 'Не указан';
+                    document.getElementById('delivery-method').textContent = data.order.delivery_method || 'Не указан';
+
+                    // Выводим товары
+                    const productsList = document.getElementById('products-list');
+                    productsList.innerHTML = '';
+
+                    if (data.products && data.products.length > 0) {
+                        data.products.forEach(product => {
+                            const productCard = document.createElement('div');
+                            productCard.className = 'product-card';
+
+                            productCard.innerHTML = `
+                            <div class="product-image">
+                                <img src="${product.image_url}" alt="${product.name}">
+                            </div>
+                            <div class="product-info">
+                                <div class="product-title">${product.name}</div>
+                                <div class="product-price">${product.price} ₽</div>
+                                <div class="product-quantity">Количество: ${product.quantity} шт.</div>
+                            </div>
+                        `;
+
+                            productsList.appendChild(productCard);
+                        });
+                    } else {
+                        productsList.innerHTML = '<p>Товары не найдены</p>';
+                    }
+                } else {
+                    document.getElementById('products-list').innerHTML = '<p>Ошибка загрузки товаров</p>';
+                    console.error('Ошибка:', data.message);
+                }
+            })
+            .catch(error => {
+                document.getElementById('products-loading').style.display = 'none';
+                document.getElementById('products-list').innerHTML = '<p>Ошибка загрузки товаров</p>';
+                console.error('Ошибка запроса:', error);
+            });
     }
 </script>
 
@@ -413,6 +455,20 @@
         color: #6b7280;
         font-size: 0.9rem;
         margin-top: 0.25rem;
+    }
+
+    #products-loading {
+        color: #6b7280;
+    }
+
+    #products-loading svg {
+        animation: spin 1s linear infinite;
+        margin-bottom: 0.5rem;
+    }
+
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
     }
 
     .empty-state {
