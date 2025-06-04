@@ -134,12 +134,10 @@ class Order extends \yii\db\ActiveRecord
     public function updateTotalPrice()
     {
         $total = 0;
-        // Получаем все товары заказа одним запросом
         $orderProducts = $this->orderProducts;
 
         if (!empty($orderProducts)) {
             foreach ($orderProducts as $orderProduct) {
-                // Проверка на существование связанного товара
                 if ($orderProduct->product) {
                     $total += $orderProduct->product->price * $orderProduct->quantity;
                 }
