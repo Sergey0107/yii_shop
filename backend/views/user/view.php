@@ -7,7 +7,7 @@ use common\models\User;
 /** @var yii\web\View $this */
 /** @var common\models\User $model */
 
-$this->title = 'Пользователь #' . $model->id;
+$this->title = 'Пользователь ' . $model->username;
 $this->params['breadcrumbs'][] = ['label' => 'Пользователи', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 
@@ -59,15 +59,15 @@ $this->registerCssFile("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/
                                 <div class="cosmic-info-body">
                                     <div class="row cosmic-info-row">
                                         <div class="col-md-5 cosmic-info-label">ID:</div>
-                                        <div class="col-md-7 cosmic-info-value"><?= $model->id ?></div>
+                                        <div class="col-md-7 cosmic-info-value"><?= Html::encode($model->id) ?></div>
                                     </div>
                                     <div class="row cosmic-info-row">
                                         <div class="col-md-5 cosmic-info-label">Имя пользователя:</div>
-                                        <div class="col-md-7 cosmic-info-value"><?= $model->username ?></div>
+                                        <div class="col-md-7 cosmic-info-value"><?= Html::encode($model->username) ?></div>
                                     </div>
                                     <div class="row cosmic-info-row">
                                         <div class="col-md-5 cosmic-info-label">Email:</div>
-                                        <div class="col-md-7 cosmic-info-value cosmic-email"><?= $model->email ?></div>
+                                        <div class="col-md-7 cosmic-info-value cosmic-email"><?= Html::encode($model->email) ?></div>
                                     </div>
                                     <div class="row cosmic-info-row">
                                         <div class="col-md-5 cosmic-info-label">Статус:</div>
@@ -75,6 +75,16 @@ $this->registerCssFile("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/
                                             <span class="cosmic-status-badge <?= $model->status == User::STATUS_ACTIVE ? 'active' : 'inactive' ?>">
                                                 <?= $model->status == User::STATUS_ACTIVE ? 'Активен' : ($model->status == User::STATUS_INACTIVE ? 'Неактивен' : 'Удален') ?>
                                             </span>
+                                        </div>
+                                    </div>
+                                    <div class="row cosmic-info-row">
+                                        <div class="col-md-5 cosmic-info-label">Роль:</div>
+                                        <div class="col-md-7 cosmic-info-value">
+                                            <?php
+                                            $roles = array_keys(Yii::$app->authManager->getRolesByUser($model->id));
+                                            $role = !empty($roles) ? $roles[0] : 'user';
+                                            echo Html::encode($role === 'admin' ? 'Администратор' : ($role === 'manager' ? 'Менеджер' : 'Пользователь'));
+                                            ?>
                                         </div>
                                     </div>
                                 </div>
@@ -98,7 +108,7 @@ $this->registerCssFile("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/
                                     </div>
                                     <div class="row cosmic-info-row">
                                         <div class="col-md-5 cosmic-info-label">Auth Key:</div>
-                                        <div class="col-md-7 cosmic-info-value cosmic-code"><?= $model->auth_key ?: '-' ?></div>
+                                        <div class="col-md-7 cosmic-info-value cosmic-code"><?= Html::encode($model->auth_key ?: '-') ?></div>
                                     </div>
                                     <div class="row cosmic-info-row">
                                         <div class="col-md-5 cosmic-info-label">Password Hash:</div>

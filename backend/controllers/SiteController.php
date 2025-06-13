@@ -37,7 +37,7 @@ class SiteController extends Controller
                     [
                         'allow' => true,
                         'actions' => ['index'],
-                        'roles' => ['admin'],
+                        'roles' => ['admin', 'manager'],
                     ],
                 ],
                 'denyCallback' => function ($rule, $action) {
