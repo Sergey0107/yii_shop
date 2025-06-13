@@ -245,4 +245,61 @@ class User extends ActiveRecord implements IdentityInterface
         }
         return false;
     }
+
+    /**
+     * Получает роли пользователя
+     * @return array
+     */
+    public function getRoles()
+    {
+        $authManager = Yii::$app->authManager;
+        $roles = $authManager->getRolesByUser($this->id);
+        return array_keys($roles);
+    }
+
+    /**
+     * Проверяет, есть ли у пользователя определенная роль
+     * @param string $roleName
+     * @return bool
+     */
+    public function hasRole($roleName)
+    {
+        $authManager = Yii::$app->authManager;
+        return $authManager->checkAccess($this->id, $roleName);
+    }
+
+    /**
+     * Получает отображаемое имя роли
+     * @return string
+     */
+    public function getRoleDisplayName()
+    {
+        $roles = $this->getRoles();
+        if (empty($roles)) {
+            return 'Пользователь';
+        }
+
+        $displayNames = [];
+        foreach ($roles as $role) {
+            switch ($role) {
+                case 'admin':
+                    $displayNames[] = 'Администратор';
+                    break;
+                case 'moderator':
+                    $displayNames[] = 'Модератор';
+                    break;
+                case 'manager':
+                    $displayNames[] = 'Менеджер';
+                    break;
+                case 'user':
+                    $displayNames[] = 'Пользователь';
+                    break;
+                default:
+                    $displayNames[] = ucfirst($role);
+                    break;
+            }
+        }
+
+        return implode(', ', $displayNames);
+    }
 }

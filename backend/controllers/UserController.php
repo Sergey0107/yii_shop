@@ -2,13 +2,14 @@
 
 namespace backend\controllers;
 
-use common\models\User;
 use backend\models\UserSearch;
 use Yii;
-use yii\db\Exception;
+use common\models\User;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
+use yii\web\Response;
+use yii\widgets\ActiveForm;
 
 /**
  * UserController implements the CRUD actions for User model.
@@ -16,32 +17,28 @@ use yii\filters\VerbFilter;
 class UserController extends Controller
 {
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function behaviors()
     {
-        return array_merge(
-            parent::behaviors(),
-            [
-                'verbs' => [
-                    'class' => VerbFilter::className(),
-                    'actions' => [
-                        'delete' => ['POST'],
-                    ],
+        return [
+            'verbs' => [
+                'class' => VerbFilter::className(),
+                'actions' => [
+                    'delete' => ['POST'],
                 ],
-            ]
-        );
+            ],
+        ];
     }
 
     /**
      * Lists all User models.
-     *
-     * @return string
+     * @return mixed
      */
     public function actionIndex()
     {
         $searchModel = new UserSearch();
-        $dataProvider = $searchModel->search($this->request->queryParams);
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
         return $this->render('index', [
             'searchModel' => $searchModel,
@@ -51,9 +48,8 @@ class UserController extends Controller
 
     /**
      * Displays a single User model.
-     * @param int $id
-     * @return string
-     * @throws NotFoundHttpException if the model cannot be found
+     * @param integer $id
+     * @return mixed
      */
     public function actionView($id)
     {
@@ -65,19 +61,24 @@ class UserController extends Controller
     /**
      * Creates a new User model.
      * If creation is successful, the browser will be redirected to the 'view' page.
-     * @return string|\yii\web\Response
-     * @throws Exception
+     * @return mixed
      */
     public function actionCreate()
     {
         $model = new User();
 
-        if ($this->request->isPost) {
-            if ($model->load($this->request->post()) && $model->save()) {
+        if ($model->load(Yii::$app->request->post())) {
+            // Валидация через AJAX
+            if (Yii::$app->request->isAjax) {
+                Yii::$app->response->format = Response::FORMAT_JSON;
+                return ActiveForm::validate($model);
+            }
+
+            // Сохранение пользователя
+            if ($this->saveUserWithRoles($model)) {
+                Yii::$app->session->setFlash('success', 'Пользователь успешно создан.');
                 return $this->redirect(['view', 'id' => $model->id]);
             }
-        } else {
-            $model->loadDefaultValues();
         }
 
         return $this->render('create', [
@@ -88,16 +89,25 @@ class UserController extends Controller
     /**
      * Updates an existing User model.
      * If update is successful, the browser will be redirected to the 'view' page.
-     * @param int $id
-     * @return string|\yii\web\Response
-     * @throws NotFoundHttpException if the model cannot be found
+     * @param integer $id
+     * @return mixed
      */
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);
 
-        if ($this->request->isPost && $model->load($this->request->post()) && $model->save(false)) {
-            return $this->redirect(['view', 'id' => $model->id]);
+        if ($model->load(Yii::$app->request->post())) {
+            // Валидация через AJAX
+            if (Yii::$app->request->isAjax) {
+                Yii::$app->response->format = Response::FORMAT_JSON;
+                return ActiveForm::validate($model);
+            }
+
+            // Сохранение пользователя
+            if ($this->saveUserWithRoles($model)) {
+                Yii::$app->session->setFlash('success', 'Пользователь успешно обновлен.');
+                return $this->redirect(['view', 'id' => $model->id]);
+            }
         }
 
         return $this->render('update', [
@@ -108,30 +118,89 @@ class UserController extends Controller
     /**
      * Deletes an existing User model.
      * If deletion is successful, the browser will be redirected to the 'index' page.
-     * @param int $id
-     * @return \yii\web\Response
-     * @throws NotFoundHttpException if the model cannot be found
+     * @param integer $id
+     * @return mixed
      */
     public function actionDelete($id)
     {
-        $this->findModel($id)->delete();
+        $model = $this->findModel($id);
 
+        // Проверяем, не удаляем ли мы самого себя
+        if ($model->id === Yii::$app->user->id) {
+            Yii::$app->session->setFlash('error', 'Вы не можете удалить собственную учетную запись.');
+            return $this->redirect(['index']);
+        }
+
+        // Удаляем все роли пользователя перед удалением
+        $authManager = Yii::$app->authManager;
+        $authManager->revokeAll($model->id);
+
+        // Удаляем пользователя
+        $model->delete();
+
+        Yii::$app->session->setFlash('success', 'Пользователь успешно удален.');
         return $this->redirect(['index']);
+    }
+
+    /**
+     * Сохраняет пользователя с ролями
+     * @param User $model
+     * @return bool
+     */
+    protected function saveUserWithRoles($model)
+    {
+        $transaction = Yii::$app->db->beginTransaction();
+
+        try {
+            // Если пароль не изменился (пустой), убираем его из валидации
+            if (empty($model->password) && !$model->isNewRecord) {
+                $model->password = null;
+            }
+
+            // Сохраняем пользователя
+            if (!$model->save()) {
+                $transaction->rollBack();
+                return false;
+            }
+
+            // Обрабатываем роли
+            $authManager = Yii::$app->authManager;
+            $selectedRoles = Yii::$app->request->post('user_roles', []);
+
+            // Удаляем все текущие роли пользователя
+            $authManager->revokeAll($model->id);
+
+            // Назначаем новые роли
+            foreach ($selectedRoles as $roleName) {
+                $role = $authManager->getRole($roleName);
+                if ($role) {
+                    $authManager->assign($role, $model->id);
+                }
+            }
+
+            $transaction->commit();
+            return true;
+
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+            Yii::error('Ошибка при сохранении пользователя с ролями: ' . $e->getMessage());
+            return false;
+        }
     }
 
     /**
      * Finds the User model based on its primary key value.
      * If the model is not found, a 404 HTTP exception will be thrown.
-     * @param int $id
+     * @param integer $id
      * @return User the loaded model
      * @throws NotFoundHttpException if the model cannot be found
      */
     protected function findModel($id)
     {
-        if (($model = User::findOne(['id' => $id])) !== null) {
+        if (($model = User::findOne($id)) !== null) {
             return $model;
+        } else {
+            throw new NotFoundHttpException('Запрашиваемая страница не существует.');
         }
-
-        throw new NotFoundHttpException('The requested page does not exist.');
     }
 }

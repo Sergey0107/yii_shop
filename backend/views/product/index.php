@@ -1,5 +1,7 @@
 <?php
 use backend\models\Product;
+use yii\helpers\Html;
+use yii\helpers\Json;
 ?>
 <html lang="ru">
 <head>
@@ -517,7 +519,7 @@ use backend\models\Product;
                     </div>
                 </div>
                 <div class="header-actions">
-                    <a href="#" class="btn btn-primary">
+                    <a href="<?= Html::encode(\yii\helpers\Url::to(['create'])) ?>" class="btn btn-primary">
                         <i class="fas fa-plus"></i>
                         Добавить товар
                     </a>
@@ -586,68 +588,74 @@ use backend\models\Product;
 
     <!-- Products Grid -->
     <div class="products-grid fade-in" id="productsGrid">
-        <!-- Loading state -->
-        <div class="loading-container" id="loading">
-            <div class="spinner"></div>
-            <div>Загрузка товаров...</div>
-        </div>
+        <?php foreach ($dataProvider->getModels() as $product): ?>
+            <div class="product-card">
+                <div class="product-header">
+                    <div class="product-id">#<?= Html::encode($product->id) ?></div>
+                    <div class="product-status <?= $product->is_active ? 'status-active' : 'status-inactive' ?>">
+                        <?= $product->is_active ? 'Активен' : 'Неактивен' ?>
+                    </div>
+                </div>
+
+                <div class="product-name"><?= Html::encode($product->name) ?></div>
+
+                <div class="product-details">
+                    <div class="detail-item">
+                        <i class="fas fa-ruble-sign detail-icon"></i>
+                        <span>Цена</span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-<?= $product->quantity == 0 ? 'times-circle' : ($product->quantity < 10 ? 'exclamation-triangle' : 'check-circle') ?> detail-icon"
+                           style="color: <?= $product->quantity == 0 ? '#ef4444' : ($product->quantity < 10 ? '#fbbf24' : '#22c55e') ?>"></i>
+                        <span><?= Html::encode($product->quantity) ?> шт.</span>
+                    </div>
+                </div>
+
+                <div class="product-price"><?= number_format($product->price, 0, ',', ' ') ?> ₽</div>
+
+                <div class="product-actions">
+                    <a href="<?= Html::encode(\yii\helpers\Url::to(['view', 'id' => $product->id])) ?>" class="btn btn-sm btn-view">
+                        <i class="fas fa-eye"></i>
+                        Просмотр
+                    </a>
+                    <a href="<?= Html::encode(\yii\helpers\Url::to(['update', 'id' => $product->id])) ?>" class="btn btn-sm btn-edit">
+                        <i class="fas fa-edit"></i>
+                        Изменить
+                    </a>
+                    <a href="<?= Html::encode(\yii\helpers\Url::to(['delete', 'id' => $product->id])) ?>"
+                       class="btn btn-sm btn-delete"
+                       onclick="return confirm('Вы уверены, что хотите удалить этот товар?')">
+                        <i class="fas fa-trash"></i>
+                        Удалить
+                    </a>
+                </div>
+            </div>
+        <?php endforeach; ?>
+
+        <?php if (empty($dataProvider->getModels())): ?>
+            <div class="no-results">
+                <i class="fas fa-search"></i>
+                <div>Товары не найдены</div>
+                <p style="margin-top: 0.5rem; font-size: 0.875rem;">Попробуйте изменить критерии поиска</p>
+            </div>
+        <?php endif; ?>
     </div>
 </div>
 
 <script>
-    // Sample data
-    const sampleProducts = [
-        {
-            id: 1,
-            name: "Ковер 'Тестовый'",
-            price: 89990,
-            quantity: 15,
-            is_active: 1,
-            description: "Флагманский смартфон Apple"
-        },
-        {
-            id: 2,
-            name: "Ковер 'Ирландец'",
-            price: 124990,
-            quantity: 8,
-            is_active: 1,
-            description: "Тонкий и мощный ноутбук"
-        },
-        {
-            id: 3,
-            name: "Ковер 'Зима'",
-            price: 24990,
-            quantity: 25,
-            is_active: 1,
-            description: "Беспроводные наушники"
-        },
-        {
-            id: 4,
-            name: "Ковер 'Greensburg'",
-            price: 54990,
-            quantity: 3,
-            is_active: 0,
-            description: "Универсальный планшет"
-        },
-        {
-            id: 5,
-            name: "Ковровая дорожка 'Тестовая'",
-            price: 39990,
-            quantity: 12,
-            is_active: 1,
-            description: "Умные часы"
-        },
-        {
-            id: 6,
-            name: "Ковер Magic",
-            price: 12990,
-            quantity: 0,
-            is_active: 0,
-            description: "Беспроводная клавиатура"
-        }
-    ];
+    // Данные товаров из PHP
+    const products = <?= Json::encode(array_map(function($product) {
+        return [
+            'id' => $product->id,
+            'name' => $product->name,
+            'price' => $product->price,
+            'quantity' => $product->quantity,
+            'is_active' => $product->is_active,
+            'description' => $product->description ?? '',
+        ];
+    }, $dataProvider->getModels())) ?>;
 
-    let filteredProducts = [...sampleProducts];
+    let filteredProducts = [...products];
 
     function formatPrice(price) {
         return new Intl.NumberFormat('ru-RU').format(price) + ' ₽';
@@ -670,55 +678,55 @@ use backend\models\Product;
 
         if (filteredProducts.length === 0) {
             grid.innerHTML = `
-                    <div class="no-results">
-                        <i class="fas fa-search"></i>
-                        <div>Товары не найдены</div>
-                        <p style="margin-top: 0.5rem; font-size: 0.875rem;">Попробуйте изменить критерии поиска</p>
-                    </div>
-                `;
+                <div class="no-results">
+                    <i class="fas fa-search"></i>
+                    <div>Товары не найдены</div>
+                    <p style="margin-top: 0.5rem; font-size: 0.875rem;">Попробуйте изменить критерии поиска</p>
+                </div>
+            `;
             return;
         }
 
         grid.innerHTML = filteredProducts.map(product => `
-                <div class="product-card">
-                    <div class="product-header">
-                        <div class="product-id">#${product.id}</div>
-                        <div class="product-status ${product.is_active ? 'status-active' : 'status-inactive'}">
-                            ${product.is_active ? 'Активен' : 'Неактивен'}
-                        </div>
-                    </div>
-
-                    <div class="product-name">${product.name}</div>
-
-                    <div class="product-details">
-                        <div class="detail-item">
-                            <i class="fas fa-ruble-sign detail-icon"></i>
-                            <span>Цена</span>
-                        </div>
-                        <div class="detail-item">
-                            <i class="${getQuantityIcon(product.quantity)} detail-icon" style="color: ${getQuantityColor(product.quantity)}"></i>
-                            <span>${product.quantity} шт.</span>
-                        </div>
-                    </div>
-
-                    <div class="product-price">${formatPrice(product.price)}</div>
-
-                    <div class="product-actions">
-                        <a href="#" class="btn btn-sm btn-view">
-                            <i class="fas fa-eye"></i>
-                            Просмотр
-                        </a>
-                        <a href="#" class="btn btn-sm btn-edit">
-                            <i class="fas fa-edit"></i>
-                            Изменить
-                        </a>
-                        <a href="#" class="btn btn-sm btn-delete">
-                            <i class="fas fa-trash"></i>
-                            Удалить
-                        </a>
+            <div class="product-card">
+                <div class="product-header">
+                    <div class="product-id">#${product.id}</div>
+                    <div class="product-status ${product.is_active ? 'status-active' : 'status-inactive'}">
+                        ${product.is_active ? 'Активен' : 'Неактивен'}
                     </div>
                 </div>
-            `).join('');
+
+                <div class="product-name">${product.name}</div>
+
+                <div class="product-details">
+                    <div class="detail-item">
+                        <i class="fas fa-ruble-sign detail-icon"></i>
+                        <span>Цена</span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="${getQuantityIcon(product.quantity)} detail-icon" style="color: ${getQuantityColor(product.quantity)}"></i>
+                        <span>${product.quantity} шт.</span>
+                    </div>
+                </div>
+
+                <div class="product-price">${formatPrice(product.price)}</div>
+
+                <div class="product-actions">
+                    <a href="/product/view?id=${product.id}" class="btn btn-sm btn-view">
+                        <i class="fas fa-eye"></i>
+                        Просмотр
+                    </a>
+                    <a href="/product/update?id=${product.id}" class="btn btn-sm btn-edit">
+                        <i class="fas fa-edit"></i>
+                        Изменить
+                    </a>
+                    <a href="/product/delete?id=${product.id}" class="btn btn-sm btn-delete" onclick="return confirm('Вы уверены, что хотите удалить этот товар?')">
+                        <i class="fas fa-trash"></i>
+                        Удалить
+                    </a>
+                </div>
+            </div>
+        `).join('');
     }
 
     function applyFilters() {
@@ -728,7 +736,7 @@ use backend\models\Product;
         const priceTo = parseFloat(document.getElementById('priceTo').value) || Infinity;
         const quantityFilter = document.getElementById('quantityFilter').value;
 
-        filteredProducts = sampleProducts.filter(product => {
+        filteredProducts = products.filter(product => {
             const matchesSearch = product.name.toLowerCase().includes(searchTerm);
             const matchesStatus = statusFilter === '' || product.is_active.toString() === statusFilter;
             const matchesPrice = product.price >= priceFrom && product.price <= priceTo;
@@ -744,20 +752,14 @@ use backend\models\Product;
         renderProducts();
     }
 
-    // Event listeners
+    // Event listeners для фильтрации
     document.getElementById('searchInput').addEventListener('input', applyFilters);
     document.getElementById('statusFilter').addEventListener('change', applyFilters);
     document.getElementById('priceFrom').addEventListener('input', applyFilters);
     document.getElementById('priceTo').addEventListener('input', applyFilters);
     document.getElementById('quantityFilter').addEventListener('change', applyFilters);
 
-    // Initial load
-    setTimeout(() => {
-        document.getElementById('loading').style.display = 'none';
-        renderProducts();
-    }, 1000);
-
-    // Add staggered animation to cards
+    // Добавляем анимацию карточкам
     document.addEventListener('DOMContentLoaded', function() {
         const cards = document.querySelectorAll('.fade-in');
         cards.forEach((card, index) => {

@@ -16,135 +16,130 @@ $this->params['breadcrumbs'][] = $this->title;
 $this->registerCssFile("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css");
 ?>
     <div class="container py-5 cosmic-users">
-        <div class="row justify-content-center">
-            <div class="col-lg-12">
-                <div class="card border-0 shadow-lg cosmic-card">
-                    <div class="card-header cosmic-header py-4">
-                        <div class="d-flex align-items-center justify-content-between">
-                            <div class="d-flex align-items-center">
-                                <div class="cosmic-icon-bg me-3">
-                                    <i class="bi bi-people cosmic-icon"></i>
-                                </div>
-                                <div>
-                                    <h1 class="h2 mb-0 cosmic-title"><?= Html::encode($this->title) ?></h1>
-                                    <p class="mb-0 cosmic-subtitle">Управление пользователями системы</p>
-                                </div>
+    <div class="row justify-content-center">
+        <div class="col-lg-12">
+            <div class="card border-0 shadow-lg cosmic-card">
+                <div class="card-header cosmic-header py-4">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <div class="cosmic-icon-bg me-3">
+                                <i class="bi bi-people cosmic-icon"></i>
                             </div>
-                            <?= Html::a('<i class="bi bi-plus-lg me-2"></i> Добавить пользователя', ['create'], [
-                                'class' => 'btn cosmic-add-btn',
-                                'data-bs-toggle' => 'modal',
-                                'data-bs-target' => '#userModal'
-                            ]) ?>
+                            <div>
+                                <h1 class="h2 mb-0 cosmic-title"><?= Html::encode($this->title) ?></h1>
+                                <p class="mb-0 cosmic-subtitle">Управление пользователями системы</p>
+                            </div>
                         </div>
+                        <?= Html::a('<i class="bi bi-plus-lg me-2"></i> Добавить пользователя', ['create'], [
+                            'class' => 'btn cosmic-add-btn',
+                            'data-bs-toggle' => 'modal',
+                            'data-bs-target' => '#userModal'
+                        ]) ?>
+                    </div>
+                </div>
+
+                <div class="card-body p-4 cosmic-card-body">
+                    <!-- Кастомная форма поиска -->
+                    <div class="cosmic-search-form mb-4">
+                        <?php echo $this->render('_search', [
+                            'model' => $searchModel,
+                            'formClass' => 'cosmic-form'
+                        ]); ?>
                     </div>
 
-                    <div class="card-body p-4 cosmic-card-body">
-                        <!-- Кастомная форма поиска -->
-                        <div class="cosmic-search-form mb-4">
-                            <?php echo $this->render('_search', [
-                                'model' => $searchModel,
-                                'formClass' => 'cosmic-form'
-                            ]); ?>
-                        </div>
+                    <div class="cosmic-table-responsive">
+                        <?= GridView::widget([
+                            'dataProvider' => $dataProvider,
+                            'filterModel' => $searchModel,
+                            'layout' => "{items}\n{pager}",
+                            'tableOptions' => ['class' => 'table cosmic-table'],
+                            'columns' => [
+                                [
+                                    'class' => 'yii\grid\SerialColumn',
+                                    'header' => '#',
+                                    'headerOptions' => ['class' => 'cosmic-table-header'],
+                                    'contentOptions' => ['class' => 'cosmic-table-cell']
+                                ],
+                                [
+                                    'attribute' => 'username',
+                                    'headerOptions' => ['class' => 'cosmic-table-header'],
+                                    'contentOptions' => ['class' => 'cosmic-table-cell']
+                                ],
+                                [
+                                    'attribute' => 'email',
+                                    'format' => 'email',
+                                    'headerOptions' => ['class' => 'cosmic-table-header'],
+                                    'contentOptions' => ['class' => 'cosmic-table-cell cosmic-email-cell']
+                                ],
 
-                        <div class="cosmic-table-responsive">
-                            <?= GridView::widget([
-                                'dataProvider' => $dataProvider,
-                                'filterModel' => $searchModel,
-                                'layout' => "{items}\n{pager}",
-                                'tableOptions' => ['class' => 'table cosmic-table'],
-                                'columns' => [
-                                    [
-                                        'class' => 'yii\grid\SerialColumn',
-                                        'header' => '#',
-                                        'headerOptions' => ['class' => 'cosmic-table-header'],
-                                        'contentOptions' => ['class' => 'cosmic-table-cell']
+                                [
+                                    'attribute' => 'status',
+                                    'value' => function ($model) {
+                                        return $model->status == User::STATUS_ACTIVE
+                                            ? '<span class="cosmic-status-badge active">Активен</span>'
+                                            : '<span class="cosmic-status-badge inactive">Неактивен</span>';
+                                    },
+                                    'format' => 'raw',
+                                    'filter' => [
+                                        User::STATUS_ACTIVE => 'Активен',
+                                        User::STATUS_INACTIVE => 'Неактивен',
+                                        User::STATUS_DELETED => 'Удален'
                                     ],
-                                    [
-                                        'attribute' => 'id',
-                                        'headerOptions' => ['class' => 'cosmic-table-header'],
-                                        'contentOptions' => ['class' => 'cosmic-table-cell cosmic-id-cell']
-                                    ],
-                                    [
-                                        'attribute' => 'username',
-                                        'headerOptions' => ['class' => 'cosmic-table-header'],
-                                        'contentOptions' => ['class' => 'cosmic-table-cell']
-                                    ],
-                                    [
-                                        'attribute' => 'email',
-                                        'format' => 'email',
-                                        'headerOptions' => ['class' => 'cosmic-table-header'],
-                                        'contentOptions' => ['class' => 'cosmic-table-cell cosmic-email-cell']
-                                    ],
-                                    [
-                                        'attribute' => 'status',
-                                        'value' => function ($model) {
-                                            return $model->status == User::STATUS_ACTIVE
-                                                ? '<span class="cosmic-status-badge active">Активен</span>'
-                                                : '<span class="cosmic-status-badge inactive">Неактивен</span>';
+                                    'headerOptions' => ['class' => 'cosmic-table-header'],
+                                    'contentOptions' => ['class' => 'cosmic-table-cell']
+                                ],
+                                [
+                                    'attribute' => 'created_at',
+                                    'format' => ['date', 'php:d.m.Y H:i'],
+                                    'headerOptions' => ['class' => 'cosmic-table-header'],
+                                    'contentOptions' => ['class' => 'cosmic-table-cell cosmic-date-cell']
+                                ],
+                                [
+                                    'class' => ActionColumn::className(),
+                                    'header' => 'Действия',
+                                    'headerOptions' => ['class' => 'cosmic-table-header cosmic-actions-header'],
+                                    'contentOptions' => ['class' => 'cosmic-table-cell cosmic-actions-cell'],
+                                    'template' => '{view} {update} {delete}',
+                                    'buttons' => [
+                                        'view' => function ($url, $model) {
+                                            return Html::a('<i class="bi bi-eye"></i>', $url, [
+                                                'class' => 'cosmic-action-btn cosmic-view-btn',
+                                                'title' => 'Просмотр'
+                                            ]);
                                         },
-                                        'format' => 'raw',
-                                        'filter' => [
-                                            User::STATUS_ACTIVE => 'Активен',
-                                            User::STATUS_INACTIVE => 'Неактивен',
-                                            User::STATUS_DELETED => 'Удален'
-                                        ],
-                                        'headerOptions' => ['class' => 'cosmic-table-header'],
-                                        'contentOptions' => ['class' => 'cosmic-table-cell']
-                                    ],
-                                    [
-                                        'attribute' => 'created_at',
-                                        'format' => ['date', 'php:d.m.Y H:i'],
-                                        'headerOptions' => ['class' => 'cosmic-table-header'],
-                                        'contentOptions' => ['class' => 'cosmic-table-cell cosmic-date-cell']
-                                    ],
-                                    [
-                                        'class' => ActionColumn::className(),
-                                        'header' => 'Действия',
-                                        'headerOptions' => ['class' => 'cosmic-table-header cosmic-actions-header'],
-                                        'contentOptions' => ['class' => 'cosmic-table-cell cosmic-actions-cell'],
-                                        'template' => '{view} {update} {delete}',
-                                        'buttons' => [
-                                            'view' => function ($url, $model) {
-                                                return Html::a('<i class="bi bi-eye"></i>', $url, [
-                                                    'class' => 'cosmic-action-btn cosmic-view-btn',
-                                                    'title' => 'Просмотр'
-                                                ]);
-                                            },
-                                            'update' => function ($url, $model) {
-                                                return Html::a('<i class="bi bi-pencil"></i>', $url, [
-                                                    'class' => 'cosmic-action-btn cosmic-edit-btn',
-                                                    'title' => 'Редактировать',
-                                                    'data-bs-toggle' => 'modal',
-                                                    'data-bs-target' => '#userModal'
-                                                ]);
-                                            },
-                                            'delete' => function ($url, $model) {
-                                                return Html::a('<i class="bi bi-trash"></i>', $url, [
-                                                    'class' => 'cosmic-action-btn cosmic-delete-btn',
-                                                    'title' => 'Удалить',
-                                                    'data' => [
-                                                        'confirm' => 'Вы уверены, что хотите удалить этого пользователя?',
-                                                        'method' => 'post',
-                                                    ],
-                                                ]);
-                                            }
-                                        ],
-                                        'urlCreator' => function ($action, User $model, $key, $index, $column) {
-                                            return Url::toRoute([$action, 'id' => $model->id]);
+                                        'update' => function ($url, $model) {
+                                            return Html::a('<i class="bi bi-pencil"></i>', $url, [
+                                                'class' => 'cosmic-action-btn cosmic-edit-btn',
+                                                'title' => 'Редактировать',
+                                                'data-bs-toggle' => 'modal',
+                                                'data-bs-target' => '#userModal'
+                                            ]);
+                                        },
+                                        'delete' => function ($url, $model) {
+                                            return Html::a('<i class="bi bi-trash"></i>', $url, [
+                                                'class' => 'cosmic-action-btn cosmic-delete-btn',
+                                                'title' => 'Удалить',
+                                                'data' => [
+                                                    'confirm' => 'Вы уверены, что хотите удалить этого пользователя?',
+                                                    'method' => 'post',
+                                                ],
+                                            ]);
                                         }
                                     ],
+                                    'urlCreator' => function ($action, User $model, $key, $index, $column) {
+                                        return Url::toRoute([$action, 'id' => $model->id]);
+                                    }
                                 ],
-                                'pager' => [
-                                    'options' => ['class' => 'pagination justify-content-center cosmic-pagination'],
-                                    'linkContainerOptions' => ['class' => 'page-item'],
-                                    'linkOptions' => ['class' => 'page-link cosmic-page-link'],
-                                    'disabledListItemSubTagOptions' => ['tag' => 'a', 'class' => 'page-link cosmic-page-link disabled'],
-                                    'prevPageLabel' => '<i class="bi bi-chevron-left"></i>',
-                                    'nextPageLabel' => '<i class="bi bi-chevron-right"></i>',
-                                ],
-                            ]); ?>
-                        </div>
+                            ],
+                            'pager' => [
+                                'options' => ['class' => 'pagination justify-content-center cosmic-pagination'],
+                                'linkContainerOptions' => ['class' => 'page-item'],
+                                'linkOptions' => ['class' => 'page-link cosmic-page-link'],
+                                'disabledListItemSubTagOptions' => ['tag' => 'a', 'class' => 'page-link cosmic-page-link disabled'],
+                                'prevPageLabel' => '<i class="bi bi-chevron-left"></i>',
+                                'nextPageLabel' => '<i class="bi bi-chevron-right"></i>',
+                            ],
+                        ]); ?>
                     </div>
                 </div>
             </div>
