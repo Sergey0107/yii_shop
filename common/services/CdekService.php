@@ -21,9 +21,9 @@ class CdekService
     public function getPickupPoints(int $cityCode): array
     {
 
-        if ($this->isTestMode) {
-            return $this->getTestPoints(55.7558, 37.6173);
-        }
+//        if ($this->isTestMode) {
+//            return $this->getTestPoints(55.7558, 37.6173);
+//        }
 
         try {
             $request = (new DeliveryPoints())

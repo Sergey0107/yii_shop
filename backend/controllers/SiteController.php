@@ -112,7 +112,7 @@ class SiteController extends Controller
                     return $this->goBack();
                 } else {
                     Yii::$app->user->logout();
-                    Yii::$app->session->setFlash('error', 'Доступ разрешен только администраторам и менеджерам.');
+                    //Yii::$app->session->setFlash('error', 'Доступ разрешен только администраторам и менеджерам.');
                     return $this->refresh();
                 }
             }

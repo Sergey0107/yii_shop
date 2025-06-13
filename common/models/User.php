@@ -3,6 +3,7 @@
 namespace common\models;
 
 use Yii;
+use yii\base\Exception;
 use yii\base\NotSupportedException;
 use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveRecord;
@@ -58,7 +59,7 @@ class User extends ActiveRecord implements IdentityInterface
         return [
             [['username', 'email'], 'required'],
             ['email', 'email'],
-            ['status', 'default', 'value' => self::STATUS_INACTIVE],
+            ['status', 'default', 'value' => self::STATUS_ACTIVE],
             ['status', 'in', 'range' => [self::STATUS_ACTIVE, self::STATUS_INACTIVE, self::STATUS_DELETED]],
             [['password'], 'required', 'on' => 'create'], // Требовать пароль только при создании
             [['password'], 'string', 'min' => 6], // Минимальная длина пароля
@@ -179,9 +180,13 @@ class User extends ActiveRecord implements IdentityInterface
      * Generates password hash from password and sets it to the model
      *
      * @param string $password
+     * @throws Exception
      */
-    public function setPassword($password)
+    public function setPassword($password): void
     {
+        if ($password === null) {
+            throw new \InvalidArgumentException('Password cannot be null');
+        }
         $this->password_hash = Yii::$app->security->generatePasswordHash($password);
     }
 
@@ -237,7 +242,7 @@ class User extends ActiveRecord implements IdentityInterface
         if (parent::beforeSave($insert)) {
             if ($this->isNewRecord) {
                 $this->generateAuthKey();
-                $this->setPassword($this->password); // Установка хеша пароля
+                //$this->setPassword($this->password); // Установка хеша пароля
             } elseif (!empty($this->password)) {
                 $this->setPassword($this->password); // Обновление пароля, если он был изменен
             }
