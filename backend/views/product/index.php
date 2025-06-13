@@ -1,4 +1,6 @@
-<!DOCTYPE html>
+<?php
+use backend\models\Product;
+?>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -527,19 +529,19 @@
     <!-- Stats -->
     <div class="stats-grid fade-in">
         <div class="stat-card">
-            <div class="stat-number">156</div>
+            <div class="stat-number"><?php echo Product::getProductsCount(); ?></div>
             <div class="stat-label">Всего товаров</div>
         </div>
         <div class="stat-card">
-            <div class="stat-number">134</div>
+            <div class="stat-number"><?php echo Product::getActiveProductsCount(); ?></div>
             <div class="stat-label">Активные</div>
         </div>
         <div class="stat-card">
-            <div class="stat-number">22</div>
+            <div class="stat-number"><?php echo Product::getNotActiveProductsCount(); ?></div>
             <div class="stat-label">Неактивные</div>
         </div>
         <div class="stat-card">
-            <div class="stat-number">₽124,350</div>
+            <div class="stat-number">₽<?php echo Product::getTotalSum(); ?></div>
             <div class="stat-label">Общая стоимость</div>
         </div>
     </div>

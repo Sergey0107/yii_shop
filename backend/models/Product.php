@@ -46,6 +46,26 @@ class Product extends \yii\db\ActiveRecord
         return 'product';
     }
 
+    public static function getProductsCount(): bool|int|string|null
+    {
+        return self::find()->count();
+    }
+
+    public static function getActiveProductsCount()
+    {
+        return self::find()->where(['is_active' => 1])->count();
+    }
+
+    public static function getNotActiveProductsCount()
+    {
+        return self::find()->where(['is_active' => 0])->count();
+    }
+
+    public static function getTotalSum()
+    {
+        return self::find()->sum('price');
+    }
+
     /**
      * {@inheritdoc}
      */
