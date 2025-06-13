@@ -829,7 +829,7 @@ $this->registerJs('
                     <?php
                     $activeCount = 0;
                     foreach ($dataProvider->models as $model) {
-                        if (in_array($model->status, ['новый', 'в обработке', 'new', 'processing'])) {
+                        if (in_array($model->status, [Order::STATUS_DRAFT, Order::STATUS_CREATED, Order::STATUS_IN_POINT])) {
                             $activeCount++;
                         }
                     }
@@ -897,11 +897,20 @@ $this->registerJs('
                             'attribute' => 'status',
                             'headerOptions' => ['style' => 'width: 150px; text-align: center;'],
                             'contentOptions' => ['style' => 'text-align: center;'],
+                            'value' => function ($model) {
+                                $statuses = [
+                                    Order::STATUS_DRAFT => 'Недооформлен',
+                                    Order::STATUS_CREATED => 'Оформлен',
+                                    Order::STATUS_IN_POINT => 'Доставляется',
+                                    Order::STATUS_SHIPPED => 'Доставлен',
+                                ];
+                                return $statuses[$model->status] ?? $model->status;
+                            },
                             'filter' => [
-                                'новый' => 'Новый',
-                                'в обработке' => 'В обработке',
-                                'доставлен' => 'Доставлен',
-                                'отменен' => 'Отменен',
+                                Order::STATUS_DRAFT => 'Недооформлен',
+                                Order::STATUS_CREATED => 'Оформлен',
+                                Order::STATUS_IN_POINT => 'Доставляется',
+                                Order::STATUS_SHIPPED => 'Доставлен',
                             ],
                         ],
                         [

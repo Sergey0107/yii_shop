@@ -23,6 +23,7 @@ use yii\db\Exception;
  * @property string|null $phone
  * @property string|null $email
  * @property string|null $payment_method_id
+ * @property string|null $payment_status
  * @property int $delivery_price
  *
  *
