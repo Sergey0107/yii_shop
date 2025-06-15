@@ -264,7 +264,13 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    window.location.href = '/cart/success-order';
+                    if (data.redirect_url) {
+                        // Для платежного метода 2 - редирект на платежную систему
+                        window.location.href = data.redirect_url;
+                    } else {
+                        // Для других методов - обычная страница успеха
+                        window.location.href = '/cart/success-order';
+                    }
                 } else {
                     showNotification('error', data.message || 'Ошибка при оформлении заказа');
                 }

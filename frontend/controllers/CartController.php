@@ -3,6 +3,7 @@
 namespace frontend\controllers;
 
 use AntistressStore\CdekSDK2\Entity\Requests\DeliveryPoints;
+use YooKassa\Client;
 use backend\models\City;
 use backend\models\Delivery;
 use backend\models\Order;
@@ -46,6 +47,11 @@ class CartController extends Controller
             'pickupPoints' => $this->pickUpPoints,
             'cities' => $cities,
         ]);
+
+
+        if (!empty($response)) {
+            print_r($response); die();
+        }
     }
 
     public function actionAdd()
@@ -336,10 +342,7 @@ class CartController extends Controller
     }
 
 
-    public function actionSubmit()
-    {
-        Yii::$app->response->format = Response::FORMAT_JSON;
-
+    public function actionSubmit() {
         try {
             $post = $this->validateRequest();
             $this->validateRequiredFields($post);
@@ -349,9 +352,14 @@ class CartController extends Controller
             $this->processOrder($order);
             $order->updateTotalPrice();
 
-            return ['success' => true, 'order_id' => $order->id];
+            if ($post['payment_method'] == '2') {
+                $url = $this->youKassaPayment($order);
+                return $this->asJson(['success' => true, 'redirect_url' => $url]);
+            }
+
+            return $this->asJson(['success' => true, 'order_id' => $order->id]);
         } catch (\Exception $e) {
-            return ['success' => false, 'message' => $e->getMessage()];
+            return $this->asJson(['success' => false, 'message' => $e->getMessage()]);
         }
     }
 
@@ -448,6 +456,73 @@ class CartController extends Controller
         $city = City::findOne(['city_code' => $cityCode]);
         return $city->getPickupPoints();
 
+    }
+
+    private function youKassaPayment(Order $order)
+    {
+        $secretKey = 'test_PJdR1kyi5NgL0nZi1Mi8Bn8hBWUr8f1U0TtnaIjR7pU';
+        $shopId = '1107680';
+
+
+        $client = new Client();
+        $client->setAuth($shopId, $secretKey);
+        try {
+            $idempotenceKey = uniqid('', true);
+            $response = $client->createPayment(
+                array(
+                    'amount' => array(
+                        'value' => $order->total_price,
+                        'currency' => 'RUB',
+                    ),
+                    'confirmation' => array(
+                        'type' => 'redirect',
+                        'locale' => 'ru_RU',
+                        'return_url' => 'http://localhost:20080/cart/success-order',
+                    ),
+                    'capture' => true,
+                    'description' => 'Заказ №' . $order->id,
+                    'metadata' => array(
+                        'orderNumber' => $order->id
+                    ),
+                    'receipt' => array(
+                        'customer' => array(
+                            'full_name' => 'Тестовые данные',
+                            'email' => 'email@email.ru',
+//                            'phone' => '89536635145',
+//                            'inn' => '440118073994'
+                        ),
+                        'items' => array(
+                            array(
+                                'description' => 'Переносное зарядное устройство Хувей',
+                                'quantity' => '1.00',
+                                'amount' => array(
+                                    'value' => 1000,
+                                    'currency' => 'RUB'
+                                ),
+                                'vat_code' => '2',
+                                'payment_mode' => 'full_payment',
+                                'payment_subject' => 'commodity',
+                                'country_of_origin_code' => 'CN',
+                                'product_code' => '44 4D 01 00 21 FA 41 00 23 05 41 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 12 00 AB 00',
+                                'customs_declaration_number' => '10714040/140917/0090376',
+                                'excise' => '20.00',
+                                'supplier' => array(
+                                    'name' => 'string',
+//                                    'phone' => 'string',
+//                                    'inn' => 'string'
+                                )
+                            ),
+                        )
+                    )
+                ),
+                $idempotenceKey
+            );
+
+            //получаем confirmationUrl для дальнейшего редиректа
+            return $response->getConfirmation()->getConfirmationUrl();
+        } catch (\Exception $e) {
+            return $e;
+        }
     }
 
 }
