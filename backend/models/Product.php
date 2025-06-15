@@ -268,4 +268,9 @@ class Product extends \yii\db\ActiveRecord
         return Review::find()->where(['product_id' => $this->id])->count();
     }
 
+    public function getReviews()
+    {
+        return $this->hasMany(Review::class, ['product_id' => 'id']);
+    }
+
 }

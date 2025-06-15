@@ -3,6 +3,7 @@
 namespace backend\models;
 
 use common\models\User;
+use DateTime;
 use Yii;
 
 /**
@@ -13,6 +14,7 @@ use Yii;
  * @property int|null $user_id
  * @property int|null $rating
  * @property string|null $review
+ * @property DateTime $created_at
  *
  * @property Product $product
  * @property User $user
