@@ -36,7 +36,7 @@ class CatalogController extends Controller
         if ($priceMin) $query->andWhere(['>=', 'price', $priceMin]);
         if ($priceMax) $query->andWhere(['<=', 'price', $priceMax]);
         if ($searchText) $query->andWhere(['like', 'name', $searchText]);
-
+        $query->andWhere(['is_active' => 1]);
         switch ($sort) {
             case 'price-asc':
                 $query->orderBy(['price' => SORT_ASC]);

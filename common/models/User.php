@@ -41,6 +41,11 @@ class User extends ActiveRecord implements IdentityInterface
         return '{{%user}}';
     }
 
+    public static function getCountUser(): bool|int|string|null
+    {
+        return self::find()->count();
+    }
+
     /**
      * {@inheritdoc}
      */

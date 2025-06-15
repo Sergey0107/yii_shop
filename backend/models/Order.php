@@ -40,6 +40,11 @@ class Order extends \yii\db\ActiveRecord
     const STATUS_DELIVERED = 5;      // Доставлен/получен
     const STATUS_CANCELLED = 6;      // Отменен
 
+    public static function getCountOrders(): bool|int|string|null
+    {
+        return self::find()->count();
+    }
+
     /**
      * Названия статусов для отображения
      * @return array

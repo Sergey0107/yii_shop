@@ -148,6 +148,7 @@ $this->title = "Мои заказы";
                 document.getElementById('products-loading').style.display = 'none';
 
                 if (data.success) {
+                    console.log(data.order);
                     // Обновляем информацию о заказе
                     document.getElementById('payment-method').textContent = data.order.payment_method || 'Не указан';
                     document.getElementById('delivery-method').textContent = data.order.delivery_method || 'Не указан';

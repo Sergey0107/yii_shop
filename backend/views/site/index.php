@@ -1,5 +1,6 @@
 <?php
 
+use backend\models\Order;
 use yii\helpers\Url;
 
 ?>
@@ -288,11 +289,11 @@ use yii\helpers\Url;
 
     <div class="stats-grid">
         <div class="stat-card fade-in" style="animation-delay: 0.2s;">
-            <div class="stat-number">247</div>
+            <div class="stat-number"><?php echo Order::getCountOrders(); ?></div>
             <div class="stat-label">Активных заказов</div>
         </div>
         <div class="stat-card fade-in" style="animation-delay: 0.3s;">
-            <div class="stat-number">1,543</div>
+            <div class="stat-number"><?php echo \common\models\User::getCountUser(); ?></div>
             <div class="stat-label">Довольных клиентов</div>
         </div>
     </div>
