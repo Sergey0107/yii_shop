@@ -40,7 +40,6 @@ $this->registerCss('
         min-height: 100vh;
     }
 
-    /* Современная навигация */
     .navbar {
         background: rgba(255,255,255,0.08) !important;
         backdrop-filter: blur(20px);
@@ -95,10 +94,9 @@ $this->registerCss('
         background: var(--primary-gradient) !important;
     }
 
-    /* SVG иконки для пунктов меню */
     .navbar-nav .nav-link[href*="user"]::before {
         content: "";
-        width: 12px; /* Уменьшено с 16px */
+        width: 12px; 
         height: 12px;
         background: currentColor;
         mask: url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpath d=\'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2\'/%3E%3Ccircle cx=\'12\' cy=\'7\' r=\'4\'/%3E%3C/svg%3E") no-repeat center;
@@ -107,7 +105,7 @@ $this->registerCss('
 
     .navbar-nav .nav-link[href*="product"]::before {
         content: "";
-        width: 12px; /* Уменьшено с 16px */
+        width: 12px; 
         height: 12px;
         background: currentColor;
         mask: url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpath d=\'M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z\'/%3E%3Cpath d=\'M3 6h18\'/%3E%3Cpath d=\'M16 10a4 4 0 0 1-8 0\'/%3E%3C/svg%3E") no-repeat center;
@@ -116,7 +114,7 @@ $this->registerCss('
 
     .navbar-nav .nav-link[href*="property"]::before {
         content: "";
-        width: 12px; /* Уменьшено с 16px */
+        width: 12px; 
         height: 12px;
         background: currentColor;
         mask: url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpath d=\'M9 12h6\'/%3E%3Cpath d=\'M9 16h6\'/%3E%3Cpath d=\'m20 6-2-2H6L4 6v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2z\'/%3E%3Cpath d=\'M16 2v4\'/%3E%3Cpath d=\'M8 2v4\'/%3E%3C/svg%3E") no-repeat center;
@@ -131,6 +129,19 @@ $this->registerCss('
         mask: url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpath d=\'M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z\'/%3E%3Ccircle cx=\'12\' cy=\'10\' r=\'3\'/%3E%3C/svg%3E") no-repeat center;
         -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpath d=\'M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z\'/%3E%3Ccircle cx=\'12\' cy=\'10\' r=\'3\'/%3E%3C/svg%3E") no-repeat center;
     }
+    
+    .navbar-nav .nav-link[href*="review"]::before {
+    content: "";
+    width: 12px; 
+    height: 12px;
+    background: currentColor;
+    mask: url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpath d=\'m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z\'/%3E%3C/svg%3E") no-repeat center;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpath d=\'m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z\'/%3E%3C/svg%3E") no-repeat center;
+    mask-size: contain;
+    -webkit-mask-size: contain;
+    display: inline-block;
+    margin-right: 8px;
+}
 
     /* Кнопки входа/выхода */
     .btn-link.login, .btn-link.logout {
@@ -366,6 +377,7 @@ $this->registerCss('
         ['label' => 'Товары', 'url' => ['/product/index']],
         ['label' => 'Характеристики', 'url' => ['/property/index']],
         ['label' => 'Города доставки', 'url' => ['/city/index']],
+        ['label' => 'Отзывы', 'url' => ['/review/index']],
     ];
     if (Yii::$app->user->isGuest) {
         $menuItems[] = ['label' => 'Войти', 'url' => ['/site/login']];
