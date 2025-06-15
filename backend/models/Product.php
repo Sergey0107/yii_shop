@@ -254,4 +254,18 @@ class Product extends \yii\db\ActiveRecord
 
     }
 
+    public function getRating()
+    {
+        $averageRating = Review::find()
+            ->where(['product_id' => $this->id])
+            ->average('rating');
+
+        return $averageRating !== null ? round((float)$averageRating, 1) : 0;
+    }
+
+    public function getCountReview(): bool|int|string|null
+    {
+        return Review::find()->where(['product_id' => $this->id])->count();
+    }
+
 }

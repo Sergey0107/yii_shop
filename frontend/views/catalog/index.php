@@ -220,28 +220,36 @@ $this->title = 'Каталог';
                                 <div class="product-rating">
                                     <div class="stars">
                                         <?php
-                                        $rating = $product->rating ?? rand(30, 50) / 10;
-                                        $fullStars = floor($rating);
-                                        $hasHalfStar = $rating - $fullStars >= 0.5;
-                                        ?>
+                                        $rating = $product->getRating() ?? 0;
 
-                                        <?php for ($i = 1; $i <= 5; $i++): ?>
-                                            <?php if ($i <= $fullStars): ?>
-                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="#f59e0b" xmlns="http://www.w3.org/2000/svg">
-                                                    <path d="M12 17.27L18.18 21L16.54 13.97L22 9.24L14.81 8.63L12 2L9.19 8.63L2 9.24L7.46 13.97L5.82 21L12 17.27Z" fill="currentColor"/>
-                                                </svg>
-                                            <?php elseif ($hasHalfStar && $i == $fullStars + 1): ?>
-                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="#f59e0b" xmlns="http://www.w3.org/2000/svg">
-                                                    <path d="M12 15.4V6.1L13.71 10.13L18.09 10.5L14.77 13.39L15.76 17.67M22 9.24L14.81 8.63L12 2L9.19 8.63L2 9.24L7.45 13.97L5.82 21L12 17.27L18.18 21L16.54 13.97L22 9.24Z" fill="currentColor"/>
-                                                </svg>
-                                            <?php else: ?>
-                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="#e5e7eb" xmlns="http://www.w3.org/2000/svg">
-                                                    <path d="M12 17.27L18.18 21L16.54 13.97L22 9.24L14.81 8.63L12 2L9.19 8.63L2 9.24L7.46 13.97L5.82 21L12 17.27Z" fill="currentColor"/>
-                                                </svg>
-                                            <?php endif; ?>
-                                        <?php endfor; ?>
+                                        // Если рейтинг больше 0, показываем звезды
+                                        if ($rating > 0) {
+                                            $fullStars = floor($rating);
+                                            $hasHalfStar = $rating - $fullStars >= 0.5;
+                                            $totalStars = $hasHalfStar ? $fullStars + 1 : $fullStars;
+
+                                            for ($i = 1; $i <= $totalStars; $i++) {
+                                                if ($i <= $fullStars) {
+                                                    // Полная звезда
+                                                    echo '<svg width="16" height="16" viewBox="0 0 24 24" fill="#f59e0b" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 17.27L18.18 21L16.54 13.97L22 9.24L14.81 8.63L12 2L9.19 8.63L2 9.24L7.46 13.97L5.82 21L12 17.27Z" fill="currentColor"/>
+                          </svg>';
+                                                } else {
+                                                    // Половина звезды
+                                                    echo '<svg width="16" height="16" viewBox="0 0 24 24" fill="#f59e0b" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 15.4V6.1L13.71 10.13L18.09 10.5L14.77 13.39L15.76 17.67M22 9.24L14.81 8.63L12 2L9.19 8.63L2 9.24L7.45 13.97L5.82 21L12 17.27L18.18 21L16.54 13.97L22 9.24Z" fill="currentColor"/>
+                          </svg>';
+                                                }
+                                            }
+                                        }
+                                        ?>
                                     </div>
-                                    <span class="rating-count">(<?= $product->review_count ?? rand(10, 150) ?>)</span>
+                                    <?php if ($product->getCountReview() > 0) { ?>
+                                        <span class="rating-count">(<?= $product->getCountReview(); ?>)</span>
+                                    <?php } else { ?>
+                                        <span class="rating-count">Нет отзывов</span>
+                                    <?php } ?>
+
                                 </div>
 
                                 <div class="product-price">
@@ -272,12 +280,14 @@ $this->title = 'Каталог';
                                         </button>
                                     <?php endif; ?>
 
-                                    <button class="btn-quick-view">
-                                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12C23 12 19 20 12 20C5 20 1 12 1 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                            <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                        </svg>
-                                    </button>
+                                    <?= Html::a(
+                                        '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12C23 12 19 20 12 20C5 20 1 12 1 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>',
+                                        ['catalog/card', 'id' => $product->id],
+                                        ['class' => 'btn-quick-view']
+                                    ) ?>
                                 </div>
                             </div>
                         </div>
