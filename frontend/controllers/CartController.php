@@ -374,7 +374,7 @@ class CartController extends Controller
 
     private function validateRequiredFields(array $post): void
     {
-        $required = ['phone', 'email', 'delivery_id', 'payment_method', 'delivery_price'];
+        $required = ['phone', 'email', 'delivery_id', 'payment_method'];
         foreach ($required as $field) {
             if (empty($post[$field])) {
                 throw new \Exception('Ошибка при оформлении заказа');
@@ -408,19 +408,17 @@ class CartController extends Controller
             throw new \RuntimeException('Корзина не найдена');
         }
 
-        $order->setAttributes([
-            'payment_method_id' => $data['payment_method'],
-            'delivery_id' => $data['delivery_id'],
-            'pickup_point_id' => $data['pickup_point_id'] ?? null,
-            'city' => $data['city'] ?? null,
-            'street' => $data['street'] ?? null,
-            'house' => $data['house'] ?? null,
-            'comment' => $data['comment'] ?? null,
-            'email' => $data['email'],
-            'phone' => $data['phone'],
-            'delivery_price' => $data['delivery_price'],
-            'status' => Order::STATUS_CREATED
-        ]);
+        $order->payment_method_id = $data['payment_method'] ?? '';
+        $order->delivery_id = $data['delivery_id'] ?? 1;
+        $order->pickup_point_id = $data['pickup_point_id'] ?? '';
+        $order->city = $data['city'] ?? '';
+        $order->street = $data['street'] ?? '';
+        $order->house = $data['house'] ?? '';
+        $order->status = Order::STATUS_CREATED;
+        $order->phone = $data['phone'] ?? '';
+        $order->email = $data['email'] ?? '';
+        $order->delivery_price = $data['delivery_price'] ?? 0;
+        $order->comment = $data['comment'] ?? null;
 
         return $order;
     }
