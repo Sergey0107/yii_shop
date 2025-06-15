@@ -48,7 +48,10 @@ class CatalogController extends Controller
                 $query->orderBy(['is_new' => SORT_DESC]);
                 break;
             case 'rating':
-                $query->orderBy(['rating' => SORT_DESC]); // Add this if you have a rating field
+                $query->leftJoin('review', 'review.product_id = product.id')
+                    ->select(['product.*', 'AVG(review.rating) as avg_rating'])
+                    ->groupBy('product.id')
+                    ->orderBy(['avg_rating' => SORT_DESC]);
                 break;
             case 'popular':
             default:

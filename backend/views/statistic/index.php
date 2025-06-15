@@ -495,7 +495,7 @@
             new Chart(productsCtx, {
                 type: 'bar',
                 data: {
-                    labels: ['iPhone 14', 'Samsung Galaxy', 'MacBook Air', 'AirPods Pro', 'iPad'],
+                    labels: ['тестовый коврик', 'Ковер "Советский"', 'ковер "Stels"', 'ковер "Ирландец"', 'ковер "Aftas"'],
                     datasets: [{
                         label: 'Продано',
                         data: [145, 132, 98, 89, 76],
@@ -535,7 +535,7 @@
             new Chart(categoriesCtx, {
                 type: 'pie',
                 data: {
-                    labels: ['Смартфоны', 'Ноутбуки', 'Аксессуары', 'Планшеты', 'Другое'],
+                    labels: ['Ковры', 'Ковровые дорожки', 'Аксессуары'],
                     datasets: [{
                         data: [40, 25, 20, 10, 5],
                         backgroundColor: [
