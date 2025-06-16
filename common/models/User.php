@@ -2,6 +2,7 @@
 
 namespace common\models;
 
+use backend\models\Order;
 use Yii;
 use yii\base\Exception;
 use yii\base\NotSupportedException;
@@ -311,5 +312,10 @@ class User extends ActiveRecord implements IdentityInterface
         }
 
         return implode(', ', $displayNames);
+    }
+
+    public function getOrderCount()
+    {
+        return Order::find()->where(['user_id' => $this->id])->count();
     }
 }

@@ -1,3 +1,193 @@
+<?php
+// Предполагаем, что у вас есть модель Order и User
+use backend\models\Order;
+use common\models\User;
+
+// Получение статистики по времени
+$today = date('Y-m-d');
+$yesterday = date('Y-m-d', strtotime('-1 day'));
+$thirtyDaysAgo = date('Y-m-d', strtotime('-30 days'));
+
+// Заказы сегодня
+$ordersToday = Order::find()->where(['>=', 'created_at', $today])->count();
+$ordersYesterday = Order::find()->where(['>=', 'created_at', $yesterday])->andWhere(['<', 'created_at', $today])->count();
+$ordersTodayChange = $ordersYesterday > 0 ? round((($ordersToday - $ordersYesterday) / $ordersYesterday) * 100, 1) : 0;
+
+// Выручка за день
+$revenueToday = Order::find()
+    ->where(['>=', 'created_at', $today])
+    ->andWhere(['!=', 'status', Order::STATUS_DRAFT])
+    ->sum('total_price') ?? 0;
+
+$revenueYesterday = Order::find()
+    ->where(['>=', 'created_at', $yesterday])
+    ->andWhere(['<', 'created_at', $today])
+    ->andWhere(['!=', 'status', Order::STATUS_DRAFT])
+    ->sum('total_price') ?? 0;
+
+$revenueTodayChange = $revenueYesterday > 0 ? round((($revenueToday - $revenueYesterday) / $revenueYesterday) * 100, 1) : 0;
+
+// Средний чек
+$avgCheckToday = $ordersToday > 0 ? round($revenueToday / $ordersToday) : 0;
+$avgCheckYesterday = $ordersYesterday > 0 ? round($revenueYesterday / $ordersYesterday) : 0;
+$avgCheckChange = $avgCheckYesterday > 0 ? round((($avgCheckToday - $avgCheckYesterday) / $avgCheckYesterday) * 100, 1) : 0;
+
+// Статистика пользователей
+$thisMonth = date('Y-m-01');
+$lastMonth = date('Y-m-01', strtotime('-1 month'));
+$lastMonthEnd = date('Y-m-t', strtotime('-1 month'));
+
+$activeUsers = User::find()->where(['>=', 'updated_at', $lastMonth])->count();
+$activeUsersLastMonth = User::find()
+    ->where(['>=', 'updated_at', $lastMonth])
+    ->andWhere(['<=', 'updated_at', $lastMonthEnd])
+    ->count();
+$activeUsersChange = $activeUsersLastMonth > 0 ? round((($activeUsers - $activeUsersLastMonth) / $activeUsersLastMonth) * 100, 1) : 0;
+
+$newUsers = User::find()->where(['>=', 'created_at', $thisMonth])->count();
+$newUsersLastMonth = User::find()
+    ->where(['>=', 'created_at', $lastMonth])
+    ->andWhere(['<=', 'created_at', $lastMonthEnd])
+    ->count();
+$newUsersChange = $newUsersLastMonth > 0 ? round((($newUsers - $newUsersLastMonth) / $newUsersLastMonth) * 100, 1) : 0;
+
+// Повторные покупки
+$totalOrders = Order::find()->where(['!=', 'status', Order::STATUS_DRAFT])->count();
+$repeatOrders = Order::find()
+    ->select('user_id')
+    ->where(['!=', 'status', Order::STATUS_DRAFT])
+    ->groupBy('user_id')
+    ->having('COUNT(*) > 1')
+    ->count();
+$repeatPurchasesPercent = $totalOrders > 0 ? round(($repeatOrders / $totalOrders) * 100) : 0;
+
+// LTV пользователя
+$avgLTV = Order::find()
+    ->where(['!=', 'status', Order::STATUS_DRAFT])
+    ->average('total_price') ?? 0;
+
+// Статистика товаров
+$totalProductsSold = Order::find()
+    ->joinWith('orderProducts')
+    ->where(['!=', 'order.status', Order::STATUS_DRAFT])
+    ->sum('order_products.quantity') ?? 0;
+
+$totalProductsSoldLastMonth = Order::find()
+    ->joinWith('orderProducts')
+    ->where(['!=', 'order.status', Order::STATUS_DRAFT])
+    ->andWhere(['>=', 'order.created_at', $lastMonth])
+    ->andWhere(['<=', 'order.created_at', $lastMonthEnd])
+    ->sum('order_products.quantity') ?? 0;
+
+$productsSoldChange = $totalProductsSoldLastMonth > 0 ? round((($totalProductsSold - $totalProductsSoldLastMonth) / $totalProductsSoldLastMonth) * 100, 1) : 0;
+
+// Средняя цена товара
+$avgPrice = Order::find()
+    ->joinWith(['orderProducts', 'orderProducts.product'])
+    ->where(['!=', 'order.status', Order::STATUS_DRAFT])
+    ->average('product.price') ?? 0;
+
+// Данные для графиков
+// График динамики заказов за 30 дней
+$orderDynamics = [];
+$cartDynamics = [];
+for ($i = 29; $i >= 0; $i--) {
+    $date = date('Y-m-d', strtotime("-$i days"));
+    $nextDate = date('Y-m-d', strtotime("-" . ($i - 1) . " days"));
+
+    $ordersCount = Order::find()
+        ->where(['>=', 'created_at', $date])
+        ->andWhere(['<', 'created_at', $nextDate])
+        ->andWhere(['!=', 'status', Order::STATUS_DRAFT])
+        ->count();
+
+    $cartCount = Order::find()
+        ->where(['>=', 'created_at', $date])
+        ->andWhere(['<', 'created_at', $nextDate])
+        ->andWhere(['status' => Order::STATUS_DRAFT])
+        ->count();
+
+    $orderDynamics[] = $ordersCount;
+    $cartDynamics[] = $cartCount;
+}
+
+// Топ покупатели
+$topUsers = Order::find()
+    ->select(['user_id', 'COUNT(*) as order_count'])
+    ->joinWith('user')
+    ->where(['!=', 'order.status', Order::STATUS_DRAFT])
+    ->groupBy('user_id')
+    ->orderBy('order_count DESC')
+    ->limit(5)
+    ->all();
+
+$topUsersLabels = [];
+$topUsersData = [];
+foreach ($topUsers as $user) {
+    $topUsersLabels[] = substr($user->user->username, 0, 1) . '***' . substr($user->user->email, 0, 1) . '.';
+    $topUsersData[] = $user->user->getOrderCount();
+}
+
+// Сегментация пользователей
+$newUsersCount = User::find()->where(['>=', 'created_at', $thisMonth])->count();
+$activeUsersCount = User::find()
+    ->where(['>=', 'updated_at', date('Y-m-d', strtotime('-30 days'))])
+    ->andWhere(['<', 'created_at', $thisMonth])
+    ->count();
+
+$vipUsersCount = Order::find()
+    ->select('user_id')
+    ->where(['!=', 'status', Order::STATUS_DRAFT])
+    ->groupBy('user_id')
+    ->having('SUM(total_price) > 50000')
+    ->count();
+
+$inactiveUsersCount = User::find()
+    ->where(['<', 'updated_at', date('Y-m-d', strtotime('-90 days'))])
+    ->count();
+
+$popularProducts = (new \yii\db\Query())
+    ->select(['p.id', 'p.name', 'SUM(op.quantity) as total_sold'])
+    ->from('order_products op')
+    ->leftJoin('product p', 'p.id = op.product_id')
+    ->leftJoin('order o', 'o.id = op.order_id')
+    ->where(['!=', 'o.status', Order::STATUS_DRAFT])
+    ->groupBy(['p.id', 'p.name'])
+    ->orderBy('total_sold DESC')
+    ->limit(5)
+    ->all();
+
+$popularProductsLabels = [];
+$popularProductsData = [];
+foreach ($popularProducts as $product) {
+    $popularProductsLabels[] = $product['name'] ?? 'Товар #' . $product['id'];
+    $popularProductsData[] = (int)$product['total_sold'];
+}
+
+// Продажи по категориям (предполагаем, что есть категории)
+$categorySales = (new \yii\db\Query())
+    ->select(['pt.name as type_name', 'SUM(op.quantity) as total_sold'])
+    ->from('order_products op')
+    ->leftJoin('product p', 'p.id = op.product_id')
+    ->leftJoin('type pt', 'pt.id = p.type_id') // предполагаем, что есть таблица product_type
+    ->leftJoin('order o', 'o.id = op.order_id')
+    ->where(['!=', 'o.status', Order::STATUS_DRAFT])
+    ->groupBy(['p.type_id', 'pt.name'])
+    ->orderBy('total_sold DESC')
+    ->limit(5)
+    ->all();
+
+$categoryLabels = [];
+$categoryData = [];
+foreach ($categorySales as $category) {
+    $categoryLabels[] = $category['type_name'] ?? 'Без типа';
+    $categoryData[] = (int)$category['total_sold'];
+}
+
+// Заказы в корзине
+$draftOrders = Order::find()->where(['status' => Order::STATUS_DRAFT])->count();
+?>
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -210,18 +400,29 @@
             <div class="stats-grid">
                 <div class="stat-card">
                     <h3>Заказов сегодня</h3>
-                    <div class="value">47</div>
-                    <div class="change positive">+12% к вчера</div>
+                    <div class="value"><?= $ordersToday ?></div>
+                    <div class="change <?= $ordersTodayChange >= 0 ? 'positive' : 'negative' ?>">
+                        <?= $ordersTodayChange >= 0 ? '+' : '' ?><?= $ordersTodayChange ?>% к вчера
+                    </div>
                 </div>
                 <div class="stat-card">
                     <h3>Выручка за день</h3>
-                    <div class="value">₽89,340</div>
-                    <div class="change positive">+8.5% к вчера</div>
+                    <div class="value">₽<?= number_format($revenueToday, 0, ',', ' ') ?></div>
+                    <div class="change <?= $revenueTodayChange >= 0 ? 'positive' : 'negative' ?>">
+                        <?= $revenueTodayChange >= 0 ? '+' : '' ?><?= $revenueTodayChange ?>% к вчера
+                    </div>
                 </div>
                 <div class="stat-card">
                     <h3>Средний чек</h3>
-                    <div class="value">₽1,901</div>
-                    <div class="change negative">-2.1% к вчера</div>
+                    <div class="value">₽<?= number_format($avgCheckToday, 0, ',', ' ') ?></div>
+                    <div class="change <?= $avgCheckChange >= 0 ? 'positive' : 'negative' ?>">
+                        <?= $avgCheckChange >= 0 ? '+' : '' ?><?= $avgCheckChange ?>% к вчера
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <h3>В корзине</h3>
+                    <div class="value"><?= $draftOrders ?></div>
+                    <div class="change">Неоформленные заказы</div>
                 </div>
             </div>
 
@@ -236,23 +437,27 @@
             <div class="stats-grid">
                 <div class="stat-card">
                     <h3>Активных пользователей</h3>
-                    <div class="value">1,247</div>
-                    <div class="change positive">+15% к прошлому месяцу</div>
+                    <div class="value"><?= $activeUsers ?></div>
+                    <div class="change <?= $activeUsersChange >= 0 ? 'positive' : 'negative' ?>">
+                        <?= $activeUsersChange >= 0 ? '+' : '' ?><?= $activeUsersChange ?>% к прошлому месяцу
+                    </div>
                 </div>
                 <div class="stat-card">
                     <h3>Новых пользователей</h3>
-                    <div class="value">89</div>
-                    <div class="change positive">+22% к прошлому месяцу</div>
+                    <div class="value"><?= $newUsers ?></div>
+                    <div class="change <?= $newUsersChange >= 0 ? 'positive' : 'negative' ?>">
+                        <?= $newUsersChange >= 0 ? '+' : '' ?><?= $newUsersChange ?>% к прошлому месяцу
+                    </div>
                 </div>
                 <div class="stat-card">
                     <h3>Повторных покупок</h3>
-                    <div class="value">67%</div>
-                    <div class="change positive">+5% к прошлому месяцу</div>
+                    <div class="value"><?= $repeatPurchasesPercent ?>%</div>
+                    <div class="change">От общего числа заказов</div>
                 </div>
                 <div class="stat-card">
                     <h3>LTV пользователя</h3>
-                    <div class="value">₽4,580</div>
-                    <div class="change positive">+12% к прошлому месяцу</div>
+                    <div class="value">₽<?= number_format($avgLTV, 0, ',', ' ') ?></div>
+                    <div class="change">Средний чек за все время</div>
                 </div>
             </div>
 
@@ -273,23 +478,15 @@
             <div class="stats-grid">
                 <div class="stat-card">
                     <h3>Товаров продано</h3>
-                    <div class="value">2,847</div>
-                    <div class="change positive">+18% к прошлому месяцу</div>
-                </div>
-                <div class="stat-card">
-                    <h3>Категорий</h3>
-                    <div class="value">24</div>
-                    <div class="change positive">+2 новые</div>
+                    <div class="value"><?= $totalProductsSold ?></div>
+                    <div class="change <?= $productsSoldChange >= 0 ? 'positive' : 'negative' ?>">
+                        <?= $productsSoldChange >= 0 ? '+' : '' ?><?= $productsSoldChange ?>% к прошлому месяцу
+                    </div>
                 </div>
                 <div class="stat-card">
                     <h3>Средняя цена</h3>
-                    <div class="value">₽2,150</div>
-                    <div class="change positive">+7% к прошлому месяцу</div>
-                </div>
-                <div class="stat-card">
-                    <h3>Остатки на складе</h3>
-                    <div class="value">₽890K</div>
-                    <div class="change negative">-12% к прошлому месяцу</div>
+                    <div class="value">₽<?= number_format($avgPrice, 0, ',', ' ') ?></div>
+                    <div class="change">За единицу товара</div>
                 </div>
             </div>
 
@@ -313,23 +510,30 @@
     Chart.defaults.borderColor = 'rgba(71, 85, 105, 0.3)';
     Chart.defaults.backgroundColor = 'rgba(71, 85, 105, 0.1)';
 
+    // Данные из PHP
+    const orderDynamics = <?= json_encode($orderDynamics) ?>;
+    const cartDynamics = <?= json_encode($cartDynamics) ?>;
+    const topUsersLabels = <?= json_encode($topUsersLabels) ?>;
+    const topUsersData = <?= json_encode($topUsersData) ?>;
+    const userSegmentData = [<?= $newUsersCount ?>, <?= $activeUsersCount ?>, <?= $vipUsersCount ?>, <?= $inactiveUsersCount ?>];
+    const popularProductsLabels = <?= json_encode($popularProductsLabels) ?>;
+    const popularProductsData = <?= json_encode($popularProductsData) ?>;
+    const categoryLabels = <?= json_encode($categoryLabels) ?>;
+    const categoryData = <?= json_encode($categoryData) ?>;
+
     // Переключение вкладок
     function switchTab(tabName) {
-        // Скрыть все вкладки
         document.querySelectorAll('.tab-content').forEach(tab => {
             tab.classList.remove('active');
         });
 
-        // Убрать активный класс с кнопок
         document.querySelectorAll('.tab-button').forEach(btn => {
             btn.classList.remove('active');
         });
 
-        // Показать выбранную вкладку
         document.getElementById(tabName + '-tab').classList.add('active');
         event.target.classList.add('active');
 
-        // Инициализировать графики для активной вкладки
         setTimeout(() => {
             initCharts(tabName);
         }, 100);
@@ -351,20 +555,27 @@
         const ctx = document.getElementById('timeChart');
         if (!ctx) return;
 
+        const labels = [];
+        for (let i = 29; i >= 0; i--) {
+            const date = new Date();
+            date.setDate(date.getDate() - i);
+            labels.push(date.getDate().toString());
+        }
+
         new Chart(ctx, {
             type: 'line',
             data: {
-                labels: ['1', '3', '5', '7', '9', '11', '13', '15', '17', '19', '21', '23', '25', '27', '29'],
+                labels: labels,
                 datasets: [{
                     label: 'Оформлено',
-                    data: [12, 19, 15, 25, 22, 30, 28, 35, 32, 40, 38, 45, 42, 48, 47],
+                    data: orderDynamics,
                     borderColor: '#60a5fa',
                     backgroundColor: 'rgba(96, 165, 250, 0.1)',
                     tension: 0.4,
                     fill: true
                 }, {
                     label: 'Добавлено в корзину',
-                    data: [22, 35, 28, 45, 40, 55, 52, 65, 60, 75, 70, 85, 80, 92, 89],
+                    data: cartDynamics,
                     borderColor: '#34d399',
                     backgroundColor: 'rgba(52, 211, 153, 0.1)',
                     tension: 0.4,
@@ -406,16 +617,15 @@
 
     // Графики пользователей
     function initUserCharts() {
-        // Топ покупатели
         const topUsersCtx = document.getElementById('topUsersChart');
         if (topUsersCtx) {
             new Chart(topUsersCtx, {
                 type: 'bar',
                 data: {
-                    labels: ['Иван И.', 'Мария С.', 'Алексей П.', 'Елена К.', 'Дмитрий В.'],
+                    labels: topUsersLabels,
                     datasets: [{
                         label: 'Заказов',
-                        data: [24, 19, 16, 14, 12],
+                        data: topUsersData,
                         backgroundColor: [
                             'rgba(96, 165, 250, 0.8)',
                             'rgba(52, 211, 153, 0.8)',
@@ -451,7 +661,6 @@
             });
         }
 
-        // Сегментация пользователей
         const segmentCtx = document.getElementById('userSegmentChart');
         if (segmentCtx) {
             new Chart(segmentCtx, {
@@ -459,7 +668,7 @@
                 data: {
                     labels: ['Новые', 'Активные', 'VIP', 'Неактивные'],
                     datasets: [{
-                        data: [35, 45, 12, 8],
+                        data: userSegmentData,
                         backgroundColor: [
                             'rgba(96, 165, 250, 0.8)',
                             'rgba(52, 211, 153, 0.8)',
@@ -489,16 +698,15 @@
 
     // Графики товаров
     function initProductCharts() {
-        // Популярные товары
         const productsCtx = document.getElementById('popularProductsChart');
         if (productsCtx) {
             new Chart(productsCtx, {
                 type: 'bar',
                 data: {
-                    labels: ['тестовый коврик', 'Ковер "Советский"', 'ковер "Stels"', 'ковер "Ирландец"', 'ковер "Aftas"'],
+                    labels: popularProductsLabels,
                     datasets: [{
                         label: 'Продано',
-                        data: [145, 132, 98, 89, 76],
+                        data: popularProductsData,
                         backgroundColor: 'rgba(96, 165, 250, 0.8)',
                         borderRadius: 6
                     }]
@@ -529,15 +737,14 @@
             });
         }
 
-        // Продажи по категориям
         const categoriesCtx = document.getElementById('categoriesChart');
         if (categoriesCtx) {
             new Chart(categoriesCtx, {
                 type: 'pie',
                 data: {
-                    labels: ['Ковры', 'Ковровые дорожки', 'Аксессуары'],
+                    labels: categoryLabels,
                     datasets: [{
-                        data: [40, 25, 20, 10, 5],
+                        data: categoryData,
                         backgroundColor: [
                             'rgba(96, 165, 250, 0.8)',
                             'rgba(52, 211, 153, 0.8)',
