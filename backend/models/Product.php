@@ -273,4 +273,13 @@ class Product extends \yii\db\ActiveRecord
         return $this->hasMany(Review::class, ['product_id' => 'id']);
     }
 
+    public function isInWishlist()
+    {
+        $wishlist = Wishlist::findOne(['user_id' => Yii::$app->user->id, 'product_id' => $this->id]);
+        if ($wishlist) {
+            return true;
+        }
+        return false;
+    }
+
 }

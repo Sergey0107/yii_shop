@@ -544,6 +544,10 @@ $backendUploads = BackendAsset::register($this);
 
     function removeFromWishlist(productId) {
         if (confirm('Удалить товар из избранного?')) {
+            // Получаем CSRF-токен из мета-тега
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+            const csrfParam = document.querySelector('meta[name="csrf-param"]').content;
+
             // AJAX запрос для удаления товара из избранного
             fetch('<?= Url::to(['wishlist/remove']) ?>', {
                 method: 'POST',
@@ -551,24 +555,18 @@ $backendUploads = BackendAsset::register($this);
                     'Content-Type': 'application/x-www-form-urlencoded',
                     'X-Requested-With': 'XMLHttpRequest'
                 },
-                body: 'product_id=' + productId
+                body: `${csrfParam}=${encodeURIComponent(csrfToken)}&product_id=${productId}`
             })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if (data.success) {
-                        // Удалить карточку товара из DOM с анимацией
-                        const productCard = event.target.closest('.product-card');
-                        productCard.style.transform = 'scale(0)';
-                        productCard.style.opacity = '0';
-                        setTimeout(() => {
-                            productCard.remove();
-                            // Проверить, остались ли товары
-                            const remainingCards = document.querySelectorAll('.product-card');
-                            if (remainingCards.length === 0) {
-                                location.reload(); // Перезагрузить страницу для показа пустого состояния
-                            }
-                        }, 300);
                         showNotification('Товар удален из избранного', 'success');
+                        window.location.reload();
                     } else {
                         showNotification('Ошибка при удалении товара', 'error');
                     }

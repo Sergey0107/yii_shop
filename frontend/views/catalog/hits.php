@@ -359,7 +359,7 @@ $this->title = 'Хиты продаж';
                 const productId = this.dataset.productId;
                 const isActive = this.classList.contains('active');
 
-                $.post('/wishlist/toggle', {id: productId})
+                $.post('/wishlist/add', {id: productId})
                     .done(function(response) {
                         if(response.success) {
                             this.classList.toggle('active');
