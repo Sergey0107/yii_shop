@@ -8,15 +8,30 @@ $today = date('Y-m-d');
 $yesterday = date('Y-m-d', strtotime('-1 day'));
 $thirtyDaysAgo = date('Y-m-d', strtotime('-30 days'));
 
-// Заказы сегодня
+// Заказы сегодня (включая корзину)
 $ordersToday = Order::find()->where(['>=', 'created_at', $today])->count();
 $ordersYesterday = Order::find()->where(['>=', 'created_at', $yesterday])->andWhere(['<', 'created_at', $today])->count();
 $ordersTodayChange = $ordersYesterday > 0 ? round((($ordersToday - $ordersYesterday) / $ordersYesterday) * 100, 1) : 0;
 
-// Выручка за день
+// Оформленные заказы сегодня (без корзины)
+$completedOrdersToday = Order::find()
+    ->where(['>=', 'created_at', $today])
+    ->andWhere(['!=', 'status', Order::STATUS_DRAFT])
+    ->count();
+
+$completedOrdersYesterday = Order::find()
+    ->where(['>=', 'created_at', $yesterday])
+    ->andWhere(['<', 'created_at', $today])
+    ->andWhere(['!=', 'status', Order::STATUS_DRAFT])
+    ->count();
+
+$completedOrdersTodayChange = $completedOrdersYesterday > 0 ? round((($completedOrdersToday - $completedOrdersYesterday) / $completedOrdersYesterday) * 100, 1) : 0;
+
+// Выручка за день (только оформленные заказы)
 $revenueToday = Order::find()
     ->where(['>=', 'created_at', $today])
     ->andWhere(['!=', 'status', Order::STATUS_DRAFT])
+//print_r($revenueToday->createCommand()->getRawSql()); die();
     ->sum('total_price') ?? 0;
 
 $revenueYesterday = Order::find()
@@ -27,9 +42,9 @@ $revenueYesterday = Order::find()
 
 $revenueTodayChange = $revenueYesterday > 0 ? round((($revenueToday - $revenueYesterday) / $revenueYesterday) * 100, 1) : 0;
 
-// Средний чек
-$avgCheckToday = $ordersToday > 0 ? round($revenueToday / $ordersToday) : 0;
-$avgCheckYesterday = $ordersYesterday > 0 ? round($revenueYesterday / $ordersYesterday) : 0;
+// Средний чек (только оформленные заказы)
+$avgCheckToday = $completedOrdersToday > 0 ? round($revenueToday / $completedOrdersToday) : 0;
+$avgCheckYesterday = $completedOrdersYesterday > 0 ? round($revenueYesterday / $completedOrdersYesterday) : 0;
 $avgCheckChange = $avgCheckYesterday > 0 ? round((($avgCheckToday - $avgCheckYesterday) / $avgCheckYesterday) * 100, 1) : 0;
 
 // Статистика пользователей
@@ -88,26 +103,37 @@ $avgPrice = Order::find()
     ->average('product.price') ?? 0;
 
 // Данные для графиков
-// График динамики заказов за 30 дней
+// График динамики заказов за 30 дней (включая корзину)
 $orderDynamics = [];
+$completedOrderDynamics = [];
 $cartDynamics = [];
+
 for ($i = 29; $i >= 0; $i--) {
     $date = date('Y-m-d', strtotime("-$i days"));
     $nextDate = date('Y-m-d', strtotime("-" . ($i - 1) . " days"));
 
-    $ordersCount = Order::find()
+    // Все заказы (включая корзину)
+    $allOrdersCount = Order::find()
+        ->where(['>=', 'created_at', $date])
+        ->andWhere(['<', 'created_at', $nextDate])
+        ->count();
+
+    // Оформленные заказы
+    $completedOrdersCount = Order::find()
         ->where(['>=', 'created_at', $date])
         ->andWhere(['<', 'created_at', $nextDate])
         ->andWhere(['!=', 'status', Order::STATUS_DRAFT])
         ->count();
 
+    // Заказы в корзине
     $cartCount = Order::find()
         ->where(['>=', 'created_at', $date])
         ->andWhere(['<', 'created_at', $nextDate])
         ->andWhere(['status' => Order::STATUS_DRAFT])
         ->count();
 
-    $orderDynamics[] = $ordersCount;
+    $orderDynamics[] = $allOrdersCount;
+    $completedOrderDynamics[] = $completedOrdersCount;
     $cartDynamics[] = $cartCount;
 }
 
@@ -183,8 +209,23 @@ foreach ($categorySales as $category) {
     $categoryData[] = (int)$category['total_sold'];
 }
 
-
+// Статистика корзины
 $draftOrders = Order::find()->where(['status' => Order::STATUS_DRAFT])->count();
+$draftOrdersToday = Order::find()
+    ->where(['>=', 'created_at', $today])
+    ->andWhere(['status' => Order::STATUS_DRAFT])
+    ->count();
+
+$draftOrdersYesterday = Order::find()
+    ->where(['>=', 'created_at', $yesterday])
+    ->andWhere(['<', 'created_at', $today])
+    ->andWhere(['status' => Order::STATUS_DRAFT])
+    ->count();
+
+$draftOrdersTodayChange = $draftOrdersYesterday > 0 ? round((($draftOrdersToday - $draftOrdersYesterday) / $draftOrdersYesterday) * 100, 1) : 0;
+
+// Конверсия корзины в заказ
+$conversionRate = $ordersToday > 0 ? round(($completedOrdersToday / $ordersToday) * 100, 1) : 0;
 ?>
 
 <!DOCTYPE html>
@@ -398,10 +439,17 @@ $draftOrders = Order::find()->where(['status' => Order::STATUS_DRAFT])->count();
         <div id="time-tab" class="tab-content active">
             <div class="stats-grid">
                 <div class="stat-card">
-                    <h3>Заказов сегодня</h3>
+                    <h3>Всего заказов сегодня</h3>
                     <div class="value"><?= $ordersToday ?></div>
                     <div class="change <?= $ordersTodayChange >= 0 ? 'positive' : 'negative' ?>">
                         <?= $ordersTodayChange >= 0 ? '+' : '' ?><?= $ordersTodayChange ?>% к вчера
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <h3>Оформленных заказов</h3>
+                    <div class="value"><?= $completedOrdersToday ?></div>
+                    <div class="change <?= $completedOrdersTodayChange >= 0 ? 'positive' : 'negative' ?>">
+                        <?= $completedOrdersTodayChange >= 0 ? '+' : '' ?><?= $completedOrdersTodayChange ?>% к вчера
                     </div>
                 </div>
                 <div class="stat-card">
@@ -419,9 +467,16 @@ $draftOrders = Order::find()->where(['status' => Order::STATUS_DRAFT])->count();
                     </div>
                 </div>
                 <div class="stat-card">
-                    <h3>В корзине</h3>
-                    <div class="value"><?= $draftOrders ?></div>
-                    <div class="change">Неоформленные заказы</div>
+                    <h3>Заказов в  корзине сегодня</h3>
+                    <div class="value"><?= $draftOrdersToday ?></div>
+                    <div class="change <?= $draftOrdersTodayChange >= 0 ? 'positive' : 'negative' ?>">
+                        <?= $draftOrdersTodayChange >= 0 ? '+' : '' ?><?= $draftOrdersTodayChange ?>% к вчера
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <h3>Конверсия</h3>
+                    <div class="value"><?= $conversionRate ?>%</div>
+                    <div class="change">Корзина → Заказ</div>
                 </div>
             </div>
 
