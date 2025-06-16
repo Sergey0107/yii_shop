@@ -4,7 +4,7 @@ use yii\helpers\Html;
 use yii\widgets\DetailView;
 
 /** @var yii\web\View $this */
-/** @var app\models\Order $model */
+/** @var backend\models\Order $model */
 
 $this->title = $model->id;
 $this->params['breadcrumbs'][] = ['label' => 'Заказы', 'url' => ['index']];
@@ -305,7 +305,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 [
                     'attribute' => 'status',
                     'format' => 'raw',
-                    'value' => '<span class="cosmic-status">📦 ' . Html::encode($model->status) . '</span>',
+                    'value' => '<span class="cosmic-status">📦 ' . Html::encode($model->getStatusName()) . '</span>',
                     'label' => '📋 Статус заказа'
                 ],
                 [
@@ -316,7 +316,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 [
                     'attribute' => 'delivery_id',
                     'label' => '🚚 ID Доставки',
-                    'value' => $model->delivery_id
+                    'value' => $model->delivery->name
                 ],
 
             ],

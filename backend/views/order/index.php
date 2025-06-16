@@ -902,7 +902,7 @@ $this->registerJs('
                                     Order::STATUS_DRAFT => 'Недооформлен',
                                     Order::STATUS_CREATED => 'Оформлен',
                                     Order::STATUS_IN_POINT => 'Доставляется',
-                                    Order::STATUS_SHIPPED => 'Доставлен',
+                                    Order::STATUS_DELIVERED => 'Доставлен',
                                 ];
                                 return $statuses[$model->status] ?? $model->status;
                             },
