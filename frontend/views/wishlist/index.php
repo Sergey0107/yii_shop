@@ -56,7 +56,7 @@ $backendUploads = BackendAsset::register($this);
     .products-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-        gap: 18px;
+        gap: 25px; /* Увеличил отступ для избежания наложения */
         margin-top: 20px;
     }
 
@@ -65,17 +65,19 @@ $backendUploads = BackendAsset::register($this);
         backdrop-filter: blur(20px);
         border-radius: 20px;
         box-shadow: 0 8px 32px rgba(30, 64, 175, 0.1);
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         overflow: hidden;
         border: 1px solid rgba(255, 255, 255, 0.8);
         position: relative;
-        transform-style: preserve-3d;
+        /* Убрал transform-style: preserve-3d */
     }
 
     .product-card:hover {
-        transform: translateY(-12px) rotateX(5deg);
-        box-shadow: 0 25px 50px rgba(30, 64, 175, 0.2);
+        /* Уменьшил transform для избежания наложения */
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(30, 64, 175, 0.2);
         border-color: rgba(59, 130, 246, 0.3);
+        z-index: 10; /* Добавил z-index для hover */
     }
 
     .product-image {
@@ -96,7 +98,7 @@ $backendUploads = BackendAsset::register($this);
     }
 
     .product-card:hover .product-image img {
-        transform: scale(1.08);
+        transform: scale(1.05); /* Уменьшил масштаб */
     }
 
     .product-badge {
@@ -137,7 +139,7 @@ $backendUploads = BackendAsset::register($this);
         justify-content: center;
         font-size: 1.1rem;
         transition: all 0.3s ease;
-        z-index: 2;
+        z-index: 3; /* Увеличил z-index */
         opacity: 0;
         backdrop-filter: blur(10px);
     }
@@ -148,7 +150,7 @@ $backendUploads = BackendAsset::register($this);
 
     .remove-wishlist-btn:hover {
         background: #dc2626;
-        transform: scale(1.15);
+        transform: scale(1.1); /* Уменьшил масштаб */
         box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
     }
 
@@ -402,7 +404,7 @@ $backendUploads = BackendAsset::register($this);
 
         .products-grid {
             grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-            gap: 15px;
+            gap: 20px; /* Увеличил отступ для мобильных */
         }
 
         .product-image {
@@ -426,7 +428,7 @@ $backendUploads = BackendAsset::register($this);
     @media (max-width: 480px) {
         .products-grid {
             grid-template-columns: 1fr;
-            gap: 12px;
+            gap: 15px;
         }
 
         .wishlist-container {
