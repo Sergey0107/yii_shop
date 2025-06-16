@@ -5,8 +5,8 @@ use yii\helpers\Html;
 /** @var yii\web\View $this */
 /** @var backend\models\City $model */
 
-$this->title = 'Create City';
-$this->params['breadcrumbs'][] = ['label' => 'Cities', 'url' => ['index']];
+$this->title = 'Добавить город';
+$this->params['breadcrumbs'][] = ['label' => 'Города', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="city-create">
