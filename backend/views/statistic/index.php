@@ -164,12 +164,11 @@ foreach ($popularProducts as $product) {
     $popularProductsData[] = (int)$product['total_sold'];
 }
 
-// Продажи по категориям (предполагаем, что есть категории)
 $categorySales = (new \yii\db\Query())
     ->select(['pt.name as type_name', 'SUM(op.quantity) as total_sold'])
     ->from('order_products op')
     ->leftJoin('product p', 'p.id = op.product_id')
-    ->leftJoin('type pt', 'pt.id = p.type_id') // предполагаем, что есть таблица product_type
+    ->leftJoin('type pt', 'pt.id = p.type_id')
     ->leftJoin('order o', 'o.id = op.order_id')
     ->where(['!=', 'o.status', Order::STATUS_DRAFT])
     ->groupBy(['p.type_id', 'pt.name'])
@@ -184,7 +183,7 @@ foreach ($categorySales as $category) {
     $categoryData[] = (int)$category['total_sold'];
 }
 
-// Заказы в корзине
+
 $draftOrders = Order::find()->where(['status' => Order::STATUS_DRAFT])->count();
 ?>
 
